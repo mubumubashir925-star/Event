@@ -1,0 +1,2175 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#1a0a2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Event Management">
+<meta name="description" content="Event Management System">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<title>Event Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Exo+2:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ===== THEME VARIABLES ===== */
+[data-theme="dark"] {
+  --bg: #0d0618; --bg2: #16092a; --bg3: #1e0d38; --card: #1a0d30; --card2: #221040;
+  --border: #3a1f6e; --text: #f0eaff; --text2: #b0a0d0; --text3: #7060a0;
+  --input-bg: #1e0d38; --list-bg: #221040; --shadow: 0 8px 32px rgba(0,0,0,0.5);
+  --nav-bg: #16092a; --header-bg: linear-gradient(135deg,#16092a,#1e0d38);
+  --modal-bg: #16092a; --hero-bg: linear-gradient(135deg,#1a0d30,#2d1060);
+}
+[data-theme="light"] {
+  --bg: #f4f1f8; --bg2: #ffffff; --bg3: #ede8f5; --card: #ffffff; --card2: #f8f5ff;
+  --border: #d0c0f0; --text: #1a0d30; --text2: #5a4080; --text3: #9080b0;
+  --input-bg: #f0ebfa; --list-bg: #f8f5ff; --shadow: 0 4px 20px rgba(100,80,160,0.12);
+  --nav-bg: #ffffff; --header-bg: linear-gradient(135deg,#ffffff,#f0ebfa);
+  --modal-bg: #ffffff; --hero-bg: linear-gradient(135deg,#f0e6ff,#e8d5ff);
+}
+:root {
+  --accent: #f0a500; --accent2: #e05c00; --gold: #ffd700;
+  --green: #00c896; --red: #ff4757; --blue: #4a9eff; --purple: #9b59b6;
+  --radius: 14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html,body { height: 100%; font-family: 'Exo 2', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; transition: background 0.3s, color 0.3s; }
+
+/* SPLASH */
+#splash { position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity 0.6s; }
+#splash .logo { width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:48px;margin-bottom:20px;box-shadow:0 0 60px rgba(240,165,0,0.4);animation:pulse 2s infinite; }
+@keyframes pulse{0%,100%{box-shadow:0 0 60px rgba(240,165,0,0.4)}50%{box-shadow:0 0 100px rgba(240,165,0,0.7)}}
+#splash h1{font-family:'Amiri',serif;font-size:2.2rem;color:var(--gold)}
+#splash p{color:var(--text2);margin-top:8px;font-size:.9rem}
+#splash .loader{width:200px;height:3px;background:var(--bg3);border-radius:2px;margin-top:30px;overflow:hidden}
+#splash .loader-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));animation:load 1.5s ease forwards}
+@keyframes load{from{width:0}to{width:100%}}
+
+/* LAYOUT */
+#app{display:flex;flex-direction:column;height:100vh}
+.header{background:var(--header-bg);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}
+.header .back-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;flex-shrink:0;transition:all .2s}
+.header .title{flex:1;min-width:0}
+.header .title h2{font-size:1rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header .title p{font-size:.72rem;color:var(--text2)}
+.header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .2s}
+.fest-badge{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;padding:4px 10px;border-radius:20px;font-size:.7rem;font-weight:700;white-space:nowrap;max-width:100px;overflow:hidden;text-overflow:ellipsis}
+.content{flex:1;overflow-y:auto;padding:16px;padding-bottom:80px}
+.bottom-nav{background:var(--nav-bg);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);position:sticky;bottom:0;z-index:100}
+.nav-item{display:flex;flex-direction:column;align-items:center;padding:10px 4px;cursor:pointer;transition:all .2s;border:none;background:none;color:var(--text3);font-family:'Exo 2',sans-serif}
+.nav-item.active{color:var(--accent)}
+.nav-item .nav-icon{font-size:20px;margin-bottom:3px}
+.nav-item .nav-label{font-size:.6rem;font-weight:600;letter-spacing:.3px}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-title{font-size:.85rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px}
+
+/* DASHBOARD */
+.dash-hero{background:var(--hero-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px 16px;text-align:center;margin-bottom:16px;position:relative;overflow:hidden}
+.dash-hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse,rgba(240,165,0,.08) 0%,transparent 70%);pointer-events:none}
+.dash-hero .fest-name{font-family:'Amiri',serif;font-size:1.8rem;color:var(--gold);line-height:1.2;margin-bottom:4px}
+.dash-hero .inst-name{color:var(--text2);font-size:.85rem;margin-bottom:16px}
+.dash-hero .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat-box{background:rgba(255,255,255,.05);border-radius:10px;padding:10px;border:1px solid rgba(255,255,255,.08)}
+[data-theme="light"] .stat-box{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08)}
+.stat-box .num{font-size:1.6rem;font-weight:800;color:var(--accent)}
+.stat-box .lbl{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+.menu-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.menu-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 14px;cursor:pointer;transition:all .2s;text-align:center;position:relative;overflow:hidden}
+.menu-card:hover,.menu-card:active{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 8px 24px rgba(240,165,0,.15)}
+.menu-card .mc-icon{font-size:2rem;margin-bottom:8px}
+.menu-card .mc-title{font-size:.85rem;font-weight:700}
+.menu-card .mc-sub{font-size:.7rem;color:var(--text3);margin-top:3px}
+.menu-card .mc-badge{position:absolute;top:8px;right:8px;background:var(--accent);color:#000;font-size:.6rem;font-weight:800;padding:2px 6px;border-radius:10px}
+
+/* FORMS */
+.form-group{margin-bottom:14px}
+.form-label{font-size:.75rem;font-weight:600;color:var(--text2);margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.5px}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--input-bg);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:12px 14px;font-family:'Exo 2',sans-serif;font-size:.9rem;transition:border-color .2s;outline:none}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent)}
+.form-select option{background:var(--input-bg);color:var(--text)}
+.form-textarea{min-height:80px;resize:vertical}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+
+/* BUTTONS */
+.btn{padding:12px 20px;border-radius:10px;border:none;font-family:'Exo 2',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;width:100%;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border)}
+.btn-success{background:linear-gradient(135deg,#00c896,#00a070);color:#000}
+.btn-danger{background:linear-gradient(135deg,#ff4757,#c0392b);color:#fff}
+.btn-warning{background:linear-gradient(135deg,#f39c12,#e67e22);color:#000}
+.btn-sm{padding:7px 14px;font-size:.78rem;width:auto;border-radius:8px}
+.btn-icon{width:34px;height:34px;padding:0;border-radius:8px}
+.btn-xs{padding:4px 10px;font-size:.7rem;width:auto;border-radius:6px}
+
+/* LISTS */
+.list-item{background:var(--list-bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;transition:border-color .2s}
+.list-item:hover{border-color:var(--accent)}
+.list-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;font-weight:800}
+.list-info{flex:1;min-width:0}
+.list-title{font-size:.9rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list-sub{font-size:.72rem;color:var(--text3);margin-top:2px}
+.list-actions{display:flex;gap:6px;flex-shrink:0}
+
+/* TABS */
+.tabs{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
+.tab{padding:8px 16px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:.78rem;font-weight:600;white-space:nowrap;transition:all .2s}
+.tab.active{background:var(--accent);color:#000;border-color:var(--accent)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:.68rem;font-weight:700}
+.badge-gold{background:rgba(255,215,0,.15);color:var(--gold);border:1px solid rgba(255,215,0,.3)}
+.badge-green{background:rgba(0,200,150,.15);color:var(--green);border:1px solid rgba(0,200,150,.3)}
+.badge-red{background:rgba(255,71,87,.15);color:var(--red);border:1px solid rgba(255,71,87,.3)}
+.badge-blue{background:rgba(74,158,255,.15);color:var(--blue);border:1px solid rgba(74,158,255,.3)}
+.badge-purple{background:rgba(155,89,182,.15);color:var(--purple);border:1px solid rgba(155,89,182,.3)}
+.badge-orange{background:rgba(240,165,0,.15);color:var(--accent);border:1px solid rgba(240,165,0,.3)}
+
+/* RANK BADGES */
+.rank-badge{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;flex-shrink:0}
+.rank-1{background:linear-gradient(135deg,#ffd700,#ffa500);color:#000;box-shadow:0 0 12px rgba(255,215,0,.5)}
+.rank-2{background:linear-gradient(135deg,#c0c0c0,#808080);color:#000}
+.rank-3{background:linear-gradient(135deg,#cd7f32,#8b4513);color:#fff}
+.rank-other{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
+
+/* MARK ENTRY */
+.judge-row{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;margin-bottom:10px;background:var(--bg3);border-radius:10px;padding:10px 12px;border:1px solid var(--border)}
+.mark-input{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px;font-size:1rem;font-weight:700;text-align:center;width:70px;outline:none;font-family:'Exo 2',sans-serif}
+.mark-input:focus{border-color:var(--accent)}
+
+/* SEARCH */
+.search-box{background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:10px 14px;width:100%;display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.search-box input{background:none;border:none;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;flex:1;outline:none}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:flex-end;z-index:1000;backdrop-filter:blur(4px)}
+.modal{background:var(--modal-bg);border:1px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-height:90vh;overflow-y:auto;padding:20px 16px;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px}
+.modal-title{font-size:1.1rem;font-weight:800;margin-bottom:16px;color:var(--gold)}
+
+/* DECLARE BANNER */
+.declare-banner{background:rgba(0,200,150,.1);border:1px solid rgba(0,200,150,.3);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.declare-banner.undeclared{background:rgba(255,165,0,.08);border-color:rgba(255,165,0,.25)}
+
+/* POINTS TABLE */
+.pts-table{width:100%;border-collapse:collapse}
+.pts-table th{background:var(--bg3);color:var(--text2);padding:9px 8px;font-size:.72rem;text-align:left;border-bottom:1px solid var(--border)}
+.pts-table td{padding:9px 8px;font-size:.82rem;border-bottom:1px solid rgba(58,31,110,.2);vertical-align:middle}
+[data-theme="light"] .pts-table td{border-color:rgba(200,180,240,.3)}
+.pts-table tr:last-child td{border-bottom:none}
+.pts-table tr:nth-child(even) td{background:rgba(255,255,255,.03)}
+[data-theme="light"] .pts-table tr:nth-child(even) td{background:rgba(0,0,0,.025)}
+
+/* CODE LIST TABLE */
+.code-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.code-table th{background:var(--accent);color:#000;padding:8px;text-align:left;font-size:.72rem;font-weight:700}
+.code-table td{padding:8px;border-bottom:1px solid var(--border)}
+.code-table tr:nth-child(even) td{background:rgba(255,255,255,.03)}
+[data-theme="light"] .code-table tr:nth-child(even) td{background:rgba(0,0,0,.025)}
+
+/* WINNER CARD */
+.winner-card{background:linear-gradient(135deg,rgba(255,215,0,.1),rgba(240,165,0,.05));border:1px solid rgba(255,215,0,.3);border-radius:12px;padding:14px;margin-bottom:10px}
+.winner-item-title{font-size:.8rem;color:var(--gold);font-weight:700;margin-bottom:10px;border-bottom:1px solid rgba(255,215,0,.2);padding-bottom:6px}
+
+/* SCHEDULE */
+.schedule-item{border-left:3px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;padding:12px 14px;margin-bottom:8px}
+
+/* CERT PREVIEW */
+.cert-preview{background:linear-gradient(135deg,#fff9e6,#fff3cc);border:3px solid var(--gold);border-radius:var(--radius);padding:24px;text-align:center;color:#000;font-family:'Amiri',serif}
+.cert-name{font-size:1.3rem;font-weight:700;color:#1a0d30;border-bottom:2px solid var(--gold);display:inline-block;padding:0 20px;margin:8px 0}
+
+/* TOAST */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--green);color:#000;padding:10px 20px;border-radius:20px;font-size:.85rem;font-weight:700;z-index:9999;animation:toastIn .3s ease;white-space:nowrap;box-shadow:var(--shadow)}
+.toast.error{background:var(--red);color:#fff}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+.divider{height:1px;background:var(--border);margin:16px 0}
+.hidden{display:none!important}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.mt-10{margin-top:10px} .mt-16{margin-top:16px} .mb-10{margin-bottom:10px} .mb-16{margin-bottom:16px}
+.text-gold{color:var(--gold)} .text-green{color:var(--green)} .text-red{color:var(--red)} .text-accent{color:var(--accent)} .text-2{color:var(--text2)} .text-3{color:var(--text3)}
+.fw-800{font-weight:800} .fs-sm{font-size:.78rem} .flex{display:flex} .flex-1{flex:1} .gap-8{gap:8px} .items-center{align-items:center} .justify-between{justify-content:space-between} .w-full{width:100%} .text-center{text-align:center}
+</style>
+</head>
+<body>
+<div id="splash">
+  <div class="logo">🏆</div>
+  <h1>Event Management</h1>
+  <p>Event Management System</p>
+  <div class="loader"><div class="loader-bar"></div></div>
+</div>
+<div id="app" style="display:none">
+  <div class="header">
+    <button class="back-btn hidden" id="backBtn" onclick="goBack()">←</button>
+    <div class="title">
+      <h2 id="pageTitle">Dashboard</h2>
+      <p id="pageSubtitle">Fest & Competition Manager</p>
+    </div>
+    <div class="header-actions">
+      <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle theme">🌙</button>
+      <div class="fest-badge" id="festBadge">Setup</div>
+    </div>
+  </div>
+  <div class="content" id="mainContent"></div>
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="navigate('dashboard')" id="nav-dashboard"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></button>
+    <button class="nav-item" onclick="navigate('participants')" id="nav-participants"><span class="nav-icon">👥</span><span class="nav-label">Members</span></button>
+    <button class="nav-item" onclick="navigate('marks')" id="nav-marks"><span class="nav-icon">✍️</span><span class="nav-label">Marks</span></button>
+    <button class="nav-item" onclick="navigate('results')" id="nav-results"><span class="nav-icon">🏆</span><span class="nav-label">Results</span></button>
+    <button class="nav-item" onclick="navigate('reports')" id="nav-reports"><span class="nav-icon">📄</span><span class="nav-label">Reports</span></button>
+    <!-- nav-contactUs handled via reports -->
+  </nav>
+</div>
+<div class="modal-overlay hidden" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script>
+// =============================================
+// DATA LAYER
+// =============================================
+const DB = {
+  get:(k,d=[])=>{ try{return JSON.parse(localStorage.getItem('sav_'+k))??d}catch(e){return d} },
+  set:(k,v)=>localStorage.setItem('sav_'+k,JSON.stringify(v)),
+  config:()=>DB.get('config',{festName:'',institution:'',year:new Date().getFullYear(),maxJudges:3,maxMarks:100,pt1:5,pt2:3,pt3:1,ptAp:3,indvAp:10,indvA:8,indvBp:6,indvB:4,indvC:2,grpAp:15,grpA:12,grpBp:9,grpB:6,grpC:3,maxStageEvents:3,maxOffStageEvents:5}),
+  saveConfig:c=>DB.set('config',c),
+  teams:()=>DB.get('teams',[]),       saveTeams:t=>DB.set('teams',t),
+  sections:()=>DB.get('sections',['Sub Junior','Junior','Senior','General','Campus','High School','Higher Secondary']),
+  saveSections:s=>DB.set('sections',s),
+  items:()=>DB.get('items',[]),       saveItems:i=>DB.set('items',i),
+  groups:()=>DB.get('groups',[]),      saveGroups:g=>DB.set('groups',g),
+  participants:()=>DB.get('participants',[]), saveParticipants:p=>DB.set('participants',p),
+  marks:()=>DB.get('marks',[]),       saveMarks:m=>DB.set('marks',m),
+};
+
+// =============================================
+// THEME
+// =============================================
+function toggleTheme(){
+  const html=document.documentElement;
+  const dark=html.getAttribute('data-theme')==='dark';
+  html.setAttribute('data-theme',dark?'light':'dark');
+  document.getElementById('themeBtn').textContent=dark?'🌙':'☀️';
+  localStorage.setItem('sav_theme',dark?'light':'dark');
+}
+function initTheme(){
+  const t=localStorage.getItem('sav_theme')||'dark';
+  document.documentElement.setAttribute('data-theme',t);
+  document.getElementById('themeBtn').textContent=t==='dark'?'🌙':'☀️';
+}
+
+// =============================================
+// NAVIGATION
+// =============================================
+let currentPage='dashboard', pageStack=[];
+function navigate(page,data={},pushStack=true){
+  if(pushStack&&currentPage!==page) pageStack.push({page:currentPage,data:{}});
+  currentPage=page;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const navEl=document.getElementById('nav-'+page);
+  if(navEl) navEl.classList.add('active');
+  document.getElementById('backBtn').classList.toggle('hidden',pageStack.length===0);
+  render(page,data);
+}
+function goBack(){
+  if(pageStack.length>0){
+    const prev=pageStack.pop();
+    navigate(prev.page,prev.data||{},false);
+  }
+}
+function render(page,data={}){
+  const content=document.getElementById('mainContent');
+  const cfg=DB.config();
+  document.getElementById('festBadge').textContent=cfg.festName||'Event Mgmt';
+  const titles={
+    dashboard:['Dashboard','Competition Manager'],
+    setup:['Festival Setup','Configure your event'],
+    sections:['Sections','Age/Level categories'],
+    items:['Items','Competition items'],
+    teams:['Teams','Participating groups'],
+    participants:['Participants','Student registrations'],
+    marks:['Mark Entry','Judge marks & tabulation'],
+    markEntry:['Enter Marks','Tabulation'],
+    results:['Results','Declared & live rankings'],
+    teamPoints:['Team Points','Overall standings'],
+    sectionPoints:['Section-wise Points','Points by section'],
+    individualPoints:['Individual Points','Student points'],
+    individualDetailed:['Individual Detailed','Detailed point report'],
+    winnerList:['Winner List','All event winners'],
+    reports:['Reports','Print & Export'],
+    contactUs:['Contact Us','Developer info & feedback'],
+    codes:['Code Letters','Green room codes'],
+    codeDetailed:['Code List Detailed','Full code details'],
+    schedule:['Schedule','Item timetable'],
+    certificates:['Certificates','Generate certificates'],
+  };
+  const t=titles[page]||['Page',''];
+  document.getElementById('pageTitle').textContent=t[0];
+  document.getElementById('pageSubtitle').textContent=t[1];
+  const renderers={
+    dashboard:renderDashboard, setup:renderSetup, sections:renderSections,
+    items:renderItems, teams:renderTeams, participants:renderParticipants,
+    marks:renderMarks, markEntry:renderMarkEntry, results:renderResults,
+    teamPoints:renderTeamPoints, sectionPoints:renderSectionPoints,
+    individualPoints:renderIndividualPoints, individualDetailed:renderIndividualDetailed,
+    winnerList:renderWinnerList, reports:renderReports,
+    codes:renderCodes, codeDetailed:renderCodeDetailed,
+    schedule:renderSchedule, certificates:renderCertificates,
+  };
+  if(renderers[page]) content.innerHTML=renderers[page](data);
+  else content.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)">🚧 Coming soon</div>';
+}
+
+// =============================================
+// DASHBOARD
+// =============================================
+function renderDashboard(){
+  const cfg=DB.config(), teams=DB.teams(), participants=DB.participants(), items=DB.items(), marks=DB.marks();
+  const declared=items.filter(i=>i.declared).length;
+  return `
+  <div class="dash-hero">
+    <div class="fest-name">${cfg.festName||'Sahithyotsav'} ${cfg.year||''}</div>
+    <div class="inst-name">${cfg.institution||'Configure your institution'}</div>
+    <div class="stats-row">
+      <div class="stat-box"><div class="num">${teams.length}</div><div class="lbl">Teams</div></div>
+      <div class="stat-box"><div class="num">${participants.length}</div><div class="lbl">Students</div></div>
+      <div class="stat-box"><div class="num">${declared}/${items.length}</div><div class="lbl">Declared</div></div>
+    </div>
+  </div>
+  <div class="menu-grid">
+    <div class="menu-card" onclick="navigate('setup')"><div class="mc-icon">⚙️</div><div class="mc-title">Setup</div><div class="mc-sub">Configure festival</div></div>
+    <div class="menu-card" onclick="navigate('teams')"><div class="mc-icon">🏫</div><div class="mc-title">Teams</div><div class="mc-sub">${teams.length} registered</div>${teams.length?'<div class="mc-badge">'+teams.length+'</div>':''}</div>
+    <div class="menu-card" onclick="navigate('items')"><div class="mc-icon">🎭</div><div class="mc-title">Items</div><div class="mc-sub">${items.length} items</div>${items.length?'<div class="mc-badge">'+items.length+'</div>':''}</div>
+    <div class="menu-card" onclick="navigate('participants')"><div class="mc-icon">👥</div><div class="mc-title">Participants</div><div class="mc-sub">${participants.length} students</div>${participants.length?'<div class="mc-badge">'+participants.length+'</div>':''}</div>
+    <div class="menu-card" onclick="navigate('codes')"><div class="mc-icon">🔤</div><div class="mc-title">Code Letters</div><div class="mc-sub">Green room codes</div></div>
+    <div class="menu-card" onclick="navigate('marks')"><div class="mc-icon">✍️</div><div class="mc-title">Mark Entry</div><div class="mc-sub">Judge tabulation</div></div>
+    <div class="menu-card" onclick="navigate('results')"><div class="mc-icon">🥇</div><div class="mc-title">Results</div><div class="mc-sub">Declare & view</div></div>
+    <div class="menu-card" onclick="navigate('winnerList')"><div class="mc-icon">🏅</div><div class="mc-title">Winner List</div><div class="mc-sub">All winners</div></div>
+  </div>
+  <div class="divider"></div>
+  <div class="card-title mb-10">📊 Points Reports</div>
+  <div class="menu-grid">
+    <div class="menu-card" onclick="navigate('teamPoints')"><div class="mc-icon">📊</div><div class="mc-title">Team Points</div><div class="mc-sub">Overall standings</div></div>
+    <div class="menu-card" onclick="navigate('sectionPoints')"><div class="mc-icon">📋</div><div class="mc-title">Section-wise</div><div class="mc-sub">Points by section</div></div>
+    <div class="menu-card" onclick="navigate('individualPoints')"><div class="mc-icon">👤</div><div class="mc-title">Individual Points</div><div class="mc-sub">Student summary</div></div>
+    <div class="menu-card" onclick="navigate('individualDetailed')"><div class="mc-icon">📝</div><div class="mc-title">Indv. Detailed</div><div class="mc-sub">Item-wise breakdown</div></div>
+  </div>
+  <div class="divider"></div>
+  <div class="card" style="background:linear-gradient(135deg,rgba(240,165,0,.1),rgba(224,92,0,.1));border-color:rgba(240,165,0,.3)">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:1.5rem">💡</span>
+      <div>
+        <div style="font-size:.82rem;font-weight:700;color:var(--accent)">Workflow</div>
+        <div style="font-size:.72rem;color:var(--text2);margin-top:3px">Setup → Sections → Items → Teams → Participants → Code Letters → Mark Entry → Declare Results → View Points</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// =============================================
+// SETUP
+// =============================================
+function renderSetup(){
+  const cfg=DB.config();
+  return `
+  <div class="card">
+    <div class="card-header"><div class="card-title">🎪 Festival Details</div></div>
+    <div class="form-group"><label class="form-label">Festival Name</label><input class="form-input" id="cfg-festName" value="${cfg.festName||''}" placeholder="e.g. Sahithyotsav 2025"></div>
+    <div class="form-group"><label class="form-label">Institution / Organization</label><input class="form-input" id="cfg-institution" value="${cfg.institution||''}" placeholder="e.g. SHEMS Malabar Region"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Year</label><input class="form-input" id="cfg-year" type="number" value="${cfg.year||new Date().getFullYear()}"></div>
+      <div class="form-group"><label class="form-label">Edition</label><input class="form-input" id="cfg-edition" value="${cfg.edition||''}" placeholder="e.g. 25th"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Venue</label><input class="form-input" id="cfg-venue" value="${cfg.venue||''}" placeholder="Event venue"></div>
+    <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="cfg-date" type="date" value="${cfg.date||''}"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">⚖️ Judging & Marks</div></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">No. of Judges</label>
+        <select class="form-select" id="cfg-maxJudges">${[1,2,3,4].map(n=>`<option value="${n}" ${cfg.maxJudges==n?'selected':''}>${n} Judge${n>1?'s':''}</option>`).join('')}</select>
+      </div>
+      <div class="form-group"><label class="form-label">Max Marks / Judge</label><input class="form-input" id="cfg-maxMarks" type="number" value="${cfg.maxMarks||100}"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">🏅 Team Points Scale <span style="font-size:.72rem;color:var(--text3);font-weight:400">(rank-based, individual items)</span></div></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">🥇 1st Place</label><input class="form-input" id="cfg-pt1" type="number" value="${cfg.pt1||5}"></div>
+      <div class="form-group"><label class="form-label">🥈 2nd Place</label><input class="form-input" id="cfg-pt2" type="number" value="${cfg.pt2||3}"></div>
+      <div class="form-group"><label class="form-label">🥉 3rd Place</label><input class="form-input" id="cfg-pt3" type="number" value="${cfg.pt3||1}"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">👤 Individual Champion Points <span style="font-size:.72rem;color:var(--text3);font-weight:400">(grade-based, individual items only)</span></div></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">A+ (≥90%)</label><input class="form-input" id="cfg-indvAp" type="number" value="${cfg.indvAp||10}"></div>
+      <div class="form-group"><label class="form-label">A (≥80%)</label><input class="form-input" id="cfg-indvA" type="number" value="${cfg.indvA||8}"></div>
+      <div class="form-group"><label class="form-label">B+ (≥70%)</label><input class="form-input" id="cfg-indvBp" type="number" value="${cfg.indvBp||6}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">B (≥60%)</label><input class="form-input" id="cfg-indvB" type="number" value="${cfg.indvB||4}"></div>
+      <div class="form-group"><label class="form-label">C (≥50%)</label><input class="form-input" id="cfg-indvC" type="number" value="${cfg.indvC||2}"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">👥 Group Item Points <span style="font-size:.72rem;color:var(--text3);font-weight:400">(grade-based, adds to team total)</span></div></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">A+ (≥90%)</label><input class="form-input" id="cfg-grpAp" type="number" value="${cfg.grpAp||15}"></div>
+      <div class="form-group"><label class="form-label">A (≥80%)</label><input class="form-input" id="cfg-grpA" type="number" value="${cfg.grpA||12}"></div>
+      <div class="form-group"><label class="form-label">B+ (≥70%)</label><input class="form-input" id="cfg-grpBp" type="number" value="${cfg.grpBp||9}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">B (≥60%)</label><input class="form-input" id="cfg-grpB" type="number" value="${cfg.grpB||6}"></div>
+      <div class="form-group"><label class="form-label">C (≥50%)</label><input class="form-input" id="cfg-grpC" type="number" value="${cfg.grpC||3}"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">🔢 Item Count Limits <span style="font-size:.72rem;color:var(--text3);font-weight:400">(per participant, group items unlimited)</span></div></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">On-Stage Items Limit</label><input class="form-input" id="cfg-maxStage" type="number" value="${cfg.maxStageEvents||3}" min="1" max="20"></div>
+      <div class="form-group"><label class="form-label">Off-Stage Items Limit</label><input class="form-input" id="cfg-maxOffStage" type="number" value="${cfg.maxOffStageEvents||5}" min="1" max="20"></div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" style="width:100%;margin-bottom:12px" onclick="saveConfig()">💾 Save Settings</button>
+
+  <div class="card" style="border-color:rgba(240,165,0,.3);background:rgba(240,165,0,.04)">
+    <div class="card-header"><div class="card-title">📋 Manage Structure</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button class="btn btn-secondary" onclick="navigate('sections')">📂 Sections</button>
+      <button class="btn btn-secondary" onclick="navigate('items')">🎭 Items</button>
+      <button class="btn btn-secondary" onclick="navigate('teams')">🏫 Teams</button>
+    </div>
+  </div>
+
+  <div class="card" style="border-color:rgba(255,60,60,.2);background:rgba(255,60,60,.03)">
+    <div class="card-header"><div class="card-title">⚠️ Danger Zone</div></div>
+    <button class="btn btn-danger" style="width:100%" onclick="confirmReset()">🗑️ Reset All Data</button>
+  </div>`;
+}
+
+function saveConfig(){
+  DB.saveConfig({
+    festName:v('cfg-festName'), institution:v('cfg-institution'), year:v('cfg-year'),
+    edition:v('cfg-edition'), venue:v('cfg-venue'), date:v('cfg-date'),
+    maxJudges:parseInt(v('cfg-maxJudges')), maxMarks:parseInt(v('cfg-maxMarks')),
+    grading:v('cfg-grading'),
+    pt1:parseInt(v('cfg-pt1'))||5, pt2:parseInt(v('cfg-pt2'))||3, pt3:parseInt(v('cfg-pt3'))||1,
+    indvAp:parseInt(v('cfg-indvAp'))||10, indvA:parseInt(v('cfg-indvA'))||8,
+    indvBp:parseInt(v('cfg-indvBp'))||6, indvB:parseInt(v('cfg-indvB'))||4, indvC:parseInt(v('cfg-indvC'))||2,
+    grpAp:parseInt(v('cfg-grpAp'))||15, grpA:parseInt(v('cfg-grpA'))||12,
+    grpBp:parseInt(v('cfg-grpBp'))||9, grpB:parseInt(v('cfg-grpB'))||6, grpC:parseInt(v('cfg-grpC'))||3,
+    maxStageEvents:parseInt(v('cfg-maxStage')||3), maxOffStageEvents:parseInt(v('cfg-maxOffStage')||5),
+  });
+  toast('Configuration saved!');
+  document.getElementById('festBadge').textContent=v('cfg-festName')||'Event Mgmt';
+}
+function confirmReset(){
+  showModal(`<div class="modal-handle"></div><div class="modal-title">⚠️ Reset All Data</div>
+  <p style="color:var(--text2);margin-bottom:20px;font-size:.9rem">This permanently deletes ALL data. Cannot be undone!</p>
+  <button class="btn btn-danger" onclick="resetAll()">🗑️ Yes, Delete Everything</button>
+  <button class="btn btn-secondary mt-10" onclick="closeModal()">Cancel</button>`);
+}
+function resetAll(){
+  ['teams','sections','items','participants','marks','config','groups'].forEach(k=>localStorage.removeItem('sav_'+k));
+  closeModal(); toast('All data reset!'); navigate('dashboard');
+}
+
+// =============================================
+// SECTIONS
+// =============================================
+function renderSections(){
+  const sections=DB.sections();
+  const defaults=['Sub Junior','Junior','Senior','General','Campus','High School','Higher Secondary'];
+  return `
+  <div class="card">
+    <div class="card-header"><div class="card-title">📂 Sections (${sections.length})</div><button class="btn btn-primary btn-sm" onclick="showAddSection()">+ Add</button></div>
+    ${sections.length===0?'<div style="text-align:center;padding:30px;color:var(--text3)">No sections yet</div>':
+      sections.map((s,i)=>`
+      <div class="list-item">
+        <div class="list-avatar" style="background:var(--bg3);font-size:.8rem;color:var(--text2)">${i+1}</div>
+        <div class="list-info"><div class="list-title">${s}</div></div>
+        <div class="list-actions">
+          <button class="btn btn-secondary btn-sm btn-icon" onclick="showEditSection(${i})">✏️</button>
+          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteSection(${i})">🗑</button>
+        </div>
+      </div>`).join('')}
+  </div>
+  <div class="card" style="background:rgba(74,158,255,.05);border-color:rgba(74,158,255,.2)">
+    <div class="card-title mb-10">📌 Quick Add</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      ${defaults.map(s=>`<button class="btn btn-secondary btn-sm" onclick="quickAddSection('${s}')" style="width:auto">${s}</button>`).join('')}
+    </div>
+  </div>`;
+}
+function showAddSection(){
+  showModal(`<div class="modal-handle"></div><div class="modal-title">Add Section</div>
+  <div class="form-group"><label class="form-label">Section Name</label><input class="form-input" id="new-section" placeholder="e.g. Junior Boys"></div>
+  <button class="btn btn-primary" onclick="addSection()">Add Section</button>`);
+}
+function showEditSection(i){
+  const s=DB.sections()[i];
+  showModal(`<div class="modal-handle"></div><div class="modal-title">Edit Section</div>
+  <div class="form-group"><label class="form-label">Section Name</label><input class="form-input" id="edit-section" value="${s}"></div>
+  <button class="btn btn-primary" onclick="updateSection(${i})">Save Changes</button>
+  <button class="btn btn-secondary mt-10" onclick="closeModal()">Cancel</button>`);
+}
+function updateSection(i){
+  const name=v('edit-section').trim();
+  if(!name) return toast('Enter section name','error');
+  const sections=DB.sections(); sections[i]=name; DB.saveSections(sections);
+  closeModal(); toast('Section updated!'); render('sections');
+}
+function addSection(){ const name=v('new-section').trim(); if(!name) return toast('Enter name','error'); const s=DB.sections(); if(s.includes(name)) return toast('Already exists','error'); s.push(name); DB.saveSections(s); closeModal(); toast('Added!'); render('sections'); }
+function quickAddSection(name){ const s=DB.sections(); if(s.includes(name)) return toast('Already exists','error'); s.push(name); DB.saveSections(s); toast(name+' added!'); render('sections'); }
+function deleteSection(i){ const s=DB.sections(); s.splice(i,1); DB.saveSections(s); toast('Deleted'); render('sections'); }
+
+// =============================================
+// ITEMS / EVENTS
+// =============================================
+function renderItems(data={}){
+  const items=DB.items(), sections=DB.sections();
+  const activeSection=data.section||'All';
+  const filtered=activeSection==='All'?items:items.filter(i=>i.section===activeSection);
+  return `
+  <div class="tabs">
+    <div class="tab ${activeSection==='All'?'active':''}" onclick="render('items',{section:'All'})">All (${items.length})</div>
+    ${sections.map(s=>`<div class="tab ${activeSection===s?'active':''}" onclick="render('items',{section:'${s}'})">${s} (${items.filter(i=>i.section===s).length})</div>`).join('')}
+  </div>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+    <button class="btn btn-primary btn-sm" onclick="showAddItem()">+ Add Item</button>
+  </div>
+  ${filtered.length===0?'<div style="text-align:center;padding:30px;color:var(--text3)">🎭 No items yet</div>':
+    filtered.map(item=>{
+      const realIdx=items.indexOf(item);
+      return `
+      <div class="list-item">
+        <div class="list-avatar" style="background:var(--bg3);font-size:.7rem;color:var(--accent);font-weight:800">${item.code||String(realIdx+1).padStart(2,'0')}</div>
+        <div class="list-info">
+          <div class="list-title">${item.name}</div>
+          <div class="list-sub">${item.section} · ${item.type==='group'?'Group':item.isStage?'On-Stage':'Off-Stage'} ${item.declared?'· <span style="color:var(--green)">✓ Declared</span>':''} ${item.type==='group'?'<span class="badge" style="background:rgba(74,158,255,.15);color:var(--blue)">Group</span>':''}}</div>
+        </div>
+        <div class="list-actions">
+          <button class="btn btn-secondary btn-sm btn-icon" onclick="showEditItem(${realIdx})">✏️</button>
+          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteItem(${realIdx})">🗑</button>
+        </div>
+      </div>`}).join('')}
+  <div class="card mt-16" style="background:rgba(0,200,150,.05);border-color:rgba(0,200,150,.2)">
+    <div class="card-title mb-10">🚀 Quick Add Common Events</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      ${['Elocution (Malayalam)','Elocution (English)','Elocution (Arabic)','Essay Writing','Story Writing','Poem Recitation','Pencil Drawing','Debate','Quiz','Group Song','Burda Recitation','Moulid Recitation','Colouring','Story Telling','Patriotic Song','Khavali','Duff','Arabana','News Reading','Paper Craft','Project'].map(e=>`<button class="btn btn-secondary btn-sm" onclick="quickAddItem('${e}')" style="width:auto;font-size:.72rem">${e}</button>`).join('')}
+    </div>
+  </div>`;
+}
+function itemFormHTML(item=null){
+  const sections=DB.sections();
+  const i=item||{};
+  const isGrp=i.type==='group';
+  return '<div class="form-group"><label class="form-label">Event Name</label><input class="form-input" id="ni-name" value="'+( i.name||'')+'" placeholder="e.g. Elocution - Malayalam"></div>'
+  +'<div class="form-group"><label class="form-label">Section</label>'
+  +'<select class="form-select" id="ni-section">'+sections.map(s=>'<option'+(i.section===s?' selected':'')+'>'+s+'</option>').join('')+'</select></div>'
+  +'<div class="form-group"><label class="form-label">Type</label>'
+  +'<select class="form-select" id="ni-type" onchange="toggleStageCheck(this.value)">'
+  +'<option value="individual"'+(i.type!=='group'?' selected':'')+'>Individual</option>'
+  +'<option value="group"'+(i.type==='group'?' selected':'')+'>Group</option>'
+  +'</select></div>'
+  +'<div id="ni-stage-wrap" style="'+(isGrp?'display:none':'')+'">'
+  +'<label style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;margin-bottom:14px">'
+  +'<input type="checkbox" id="ni-isStage"'+(i.isStage?' checked':'')+' style="width:18px;height:18px;accent-color:var(--accent)">'
+  +'<div><div style="font-size:.88rem;font-weight:700">On-Stage Event</div>'
+  +'<div style="font-size:.72rem;color:var(--text3)">Check for stage performances (Elocution, Song, Dance etc.)</div>'
+  +'</div></label></div>'
+  +'<div class="form-row">'
+  +'<div class="form-group"><label class="form-label">Item Code</label><input class="form-input" id="ni-code" value="'+(i.code||'')+'" placeholder="e.g. A01"></div>'
+  +'<div class="form-group"><label class="form-label">Stage No.</label><input class="form-input" id="ni-stageNo" type="number" value="'+(i.stageNo||1)+'"></div>'
+  +'</div>'
+  +'<div class="form-group"><label class="form-label">Scheduled Time</label><input class="form-input" id="ni-time" type="time" value="'+(i.time||'')+'"></div>';
+}
+function toggleStageCheck(type){
+  const el=document.getElementById('ni-stage-wrap');
+  if(el) el.style.display=type==='group'?'none':'';
+}
+
+function showAddItem(){
+  showModal(`<div class="modal-handle"></div><div class="modal-title">Add Item</div>${itemFormHTML()}<button class="btn btn-primary" onclick="addItem()">Add Item</button>`);
+}
+function showEditItem(idx){
+  const item=DB.items()[idx];
+  showModal(`<div class="modal-handle"></div><div class="modal-title">Edit Item</div>${itemFormHTML(item)}
+  <button class="btn btn-primary" onclick="updateItem(${idx})">Save Changes</button>
+  <button class="btn btn-secondary mt-10" onclick="closeModal()">Cancel</button>`);
+}
+function addItem(){
+  const name=v('ni-name').trim(); if(!name) return toast('Enter event name','error');
+  const type=v('ni-type');
+  const isStage=type==='group'?false:document.getElementById('ni-isStage')?.checked||false;
+  const items=DB.items();
+  items.push({id:Date.now(),name,section:v('ni-section'),type,isStage,code:v('ni-code').trim()||String(items.length+1).padStart(3,'0'),stageNo:parseInt(v('ni-stageNo')||1),time:v('ni-time'),declared:false});
+  DB.saveItems(items); closeModal(); toast('Item added!'); render('items');
+}
+function updateItem(idx){
+  const type=v('ni-type');
+  const isStage=type==='group'?false:document.getElementById('ni-isStage')?.checked||false;
+  const items=DB.items();
+  items[idx]={...items[idx],name:v('ni-name').trim(),section:v('ni-section'),type,isStage,code:v('ni-code').trim(),stageNo:parseInt(v('ni-stageNo')||1),time:v('ni-time')};
+  DB.saveItems(items); closeModal(); toast('Item updated!'); render('items');
+}
+function quickAddItem(name){
+  const sections=DB.sections(), items=DB.items();
+  items.push({id:Date.now(),name,section:sections[0]||'General',type:'individual',maxParticipants:1,code:String(items.length+1).padStart(3,'0'),stage:1,time:'',declared:false});
+  DB.saveItems(items); toast(name+' added!'); render('items');
+}
+function deleteItem(i){ const items=DB.items(); items.splice(i,1); DB.saveItems(items); toast('Deleted'); render('items'); }
+
+// =============================================
+// TEAMS
+// =============================================
+function renderTeams(){
+  const teams=DB.teams();
+  const colors=['#f0a500','#00c896','#4a9eff','#ff4757','#9b59b6','#e74c3c','#27ae60','#2980b9'];
+  return `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <div style="font-size:.85rem;color:var(--text2)">${teams.length} teams</div>
+    <button class="btn btn-primary btn-sm" onclick="showAddTeam()">+ Add Group</button>
+  </div>
+  <div class="search-box"><span>🔍</span><input placeholder="Search teams..." oninput="filterTeams(this.value)" id="teamSearch"></div>
+  <div id="teamsList">
+  ${teams.length===0?'<div style="text-align:center;padding:30px;color:var(--text3)">🏫 No teams yet</div>':
+    teams.map((t,i)=>`
+    <div class="list-item">
+      <div class="list-avatar" style="background:${colors[i%colors.length]}22;color:${colors[i%colors.length]}">🏫</div>
+      <div class="list-info"><div class="list-title">${t.name}</div><div class="list-sub">${t.shortName||''} ${t.campus?'· '+t.campus:''}</div></div>
+      <div class="list-actions">
+        <button class="btn btn-secondary btn-sm btn-icon" onclick="showEditTeam(${i})">✏️</button>
+        <button class="btn btn-danger btn-sm btn-icon" onclick="deleteTeam(${i})">🗑</button>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+function teamFormHTML(t=null){
+  const tm=t||{};
+  return `
+  <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="nt-name" value="${tm.name||''}" placeholder="e.g. S.H.E.M.S Malabar"></div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Short Name</label><input class="form-input" id="nt-short" value="${tm.shortName||''}" placeholder="e.g. SHEMS"></div>
+    <div class="form-group"><label class="form-label">Campus / Zone</label><input class="form-input" id="nt-campus" value="${tm.campus||''}" placeholder="e.g. Malabar"></div>
+  </div>
+  <div class="form-group"><label class="form-label">Team Code</label><input class="form-input" id="nt-code" value="${tm.code||''}" placeholder="e.g. T01"></div>`;
+}
+function showAddTeam(){ showModal(`<div class="modal-handle"></div><div class="modal-title">Add Group</div>${teamFormHTML()}<button class="btn btn-primary" onclick="addTeam()">Add Group</button>`); }
+function showEditTeam(i){ const t=DB.teams()[i]; showModal(`<div class="modal-handle"></div><div class="modal-title">Edit Team</div>${teamFormHTML(t)}<button class="btn btn-primary" onclick="updateTeam(${i})">Save Changes</button><button class="btn btn-secondary mt-10" onclick="closeModal()">Cancel</button>`); }
+function addTeam(){
+  const name=v('nt-name').trim(); if(!name) return toast('Enter team name','error');
+  const teams=DB.teams();
+  teams.push({id:Date.now(),name,shortName:v('nt-short').trim(),campus:v('nt-campus').trim(),code:v('nt-code').trim()||'T'+String(teams.length+1).padStart(2,'0')});
+  DB.saveTeams(teams); closeModal(); toast('Team added!'); render('teams');
+}
+function updateTeam(i){
+  const teams=DB.teams();
+  teams[i]={...teams[i],name:v('nt-name').trim(),shortName:v('nt-short').trim(),campus:v('nt-campus').trim(),code:v('nt-code').trim()};
+  DB.saveTeams(teams); closeModal(); toast('Team updated!'); render('teams');
+}
+function deleteTeam(i){ const t=DB.teams(); t.splice(i,1); DB.saveTeams(t); toast('Deleted'); render('teams'); }
+function filterTeams(q){
+  const teams=DB.teams(), colors=['#f0a500','#00c896','#4a9eff','#ff4757','#9b59b6','#e74c3c','#27ae60','#2980b9'];
+  const filtered=teams.filter(t=>t.name.toLowerCase().includes(q.toLowerCase())||(t.shortName||'').toLowerCase().includes(q.toLowerCase()));
+  document.getElementById('teamsList').innerHTML=filtered.map((t,i)=>`
+    <div class="list-item">
+      <div class="list-avatar" style="background:${colors[i%colors.length]}22;color:${colors[i%colors.length]}">🏫</div>
+      <div class="list-info"><div class="list-title">${t.name}</div><div class="list-sub">${t.shortName||''}</div></div>
+      <div class="list-actions">
+        <button class="btn btn-secondary btn-sm btn-icon" onclick="showEditTeam(${teams.indexOf(t)})">✏️</button>
+        <button class="btn btn-danger btn-sm btn-icon" onclick="deleteTeam(${teams.indexOf(t)})">🗑</button>
+      </div>
+    </div>`).join('')||'<div style="color:var(--text3);text-align:center;padding:20px">No results</div>';
+}
+
+// =============================================
+// PARTICIPANTS
+// =============================================
+// =============================================
+// GROUP REGISTRATION
+// =============================================
+function groupFormHTML(grp){
+  grp=grp||{};
+  var teams=DB.teams(), sections=DB.sections(), items=DB.items(), participants=DB.participants(), groups=DB.groups();
+  var selectedSection=grp.section||sections[0]||'';
+  var selectedTeam=grp.team||'';
+
+  // Group items filtered by section
+  var groupItems=items.filter(function(i){return i.type==='group'&&(!selectedSection||i.section===selectedSection);});
+  if(!groupItems.length) groupItems=items.filter(function(i){return i.type==='group';});
+
+  // auto group chest no
+  var allChests=groups.map(function(g){return parseInt(g.groupChestNo)||0;});
+  var nextGrpChest=allChests.length>0?Math.max.apply(null,allChests)+1:501;
+
+  var sectOpts=sections.map(function(s){return '<option'+(s===selectedSection?' selected':'')+'>'+s+'</option>';}).join('');
+  var teamOpts=teams.map(function(t){return '<option value="'+t.name+'"'+(t.name===selectedTeam?' selected':'')+'>'+t.name+'</option>';}).join('');
+  var itemOpts=groupItems.map(function(i){return '<option value="'+i.id+'"'+(i.id===grp.itemId?' selected':'')+'>'+i.name+'</option>';}).join('');
+
+  // Members filtered by selected TEAM (matches original software behaviour)
+  var teamMembers=participants.filter(function(p){return !selectedTeam||p.team===selectedTeam;});
+
+  var captainOpts='<option value="">-- Select Captain --</option>'
+    +teamMembers.map(function(p){
+      var isCap=grp.members&&grp.members[0]&&grp.members[0].chestNo===p.chestNo;
+      return '<option value="'+p.chestNo+'"'+(isCap?' selected':'')+'>'+p.name+' (#'+p.chestNo+')</option>';
+    }).join('');
+
+  var mem2=grp.members&&grp.members[1]?grp.members[1]:{chestNo:'',name:''};
+  var mem2Opts='<option value="">-- Select Member 2 (optional) --</option>'
+    +teamMembers.map(function(p){
+      var isMem=mem2.chestNo&&mem2.chestNo===p.chestNo;
+      return '<option value="'+p.chestNo+'"'+(isMem?' selected':'')+'>'+p.name+' (#'+p.chestNo+')</option>';
+    }).join('');
+
+  return '<div class="form-group"><label class="form-label">Section</label>'
+    +'<select class="form-select" id="grp-section" onchange="gfSectionChange()">'+sectOpts+'</select></div>'
+    +'<div class="form-group"><label class="form-label">Team</label>'
+    +'<select class="form-select" id="grp-team" onchange="gfTeamChange()">'+teamOpts+'</select></div>'
+    +'<div class="form-group"><label class="form-label">Item</label>'
+    +'<select class="form-select" id="grp-itemId">'+itemOpts+'</select></div>'
+    +'<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-top:4px">'
+    +'<div class="form-row" style="align-items:flex-end;margin-bottom:10px">'
+    +'<div class="form-group" style="flex:0 0 140px"><label class="form-label">Group Chest No.</label>'
+    +'<input class="form-input" id="grp-chest" type="number" value="'+(grp.groupChestNo||nextGrpChest)+'"></div>'
+    +'</div>'
+    +'<div class="form-group"><label class="form-label">&#127942; Captain</label>'
+    +'<div style="font-size:.72rem;color:var(--text3);margin-bottom:4px">Group name = Captain name + &amp; Party</div>'
+    +'<select class="form-select" id="grp-captain" onchange="gfUpdateName()">'+captainOpts+'</select></div>'
+    +'<div class="form-group"><label class="form-label">Member 2 <span style="color:var(--text3);font-size:.74rem">(optional)</span></label>'
+    +'<select class="form-select" id="grp-mem2">'+mem2Opts+'</select></div>'
+    +'<div class="form-group"><label class="form-label">Group Name</label>'
+    +'<input class="form-input" id="grp-name" value="'+(grp.name||'')+'" placeholder="Auto: Captain + &amp; Party" oninput="window._grpNameManual=true"></div>'
+    +'</div>';
+}
+
+function gfSectionChange(){
+  var sec=document.getElementById('grp-section').value;
+  var items=DB.items().filter(function(i){return i.type==='group'&&i.section===sec;});
+  if(!items.length) items=DB.items().filter(function(i){return i.type==='group';});
+  var el=document.getElementById('grp-itemId');
+  if(el) el.innerHTML=items.map(function(i){return '<option value="'+i.id+'">'+i.name+'</option>';}).join('');
+  gfUpdateCaptainList();
+}
+function gfTeamChange(){ gfUpdateCaptainList(); }
+function gfUpdateCaptainList(){
+  var sec=document.getElementById('grp-section')?document.getElementById('grp-section').value:'';
+  var team=document.getElementById('grp-team')?document.getElementById('grp-team').value:'';
+  var participants=DB.participants().filter(function(p){return p.section===sec&&p.team===team;});
+  var el=document.getElementById('grp-captain');
+  if(!el) return;
+  el.innerHTML='<option value="">-- Select Captain --</option>'
+    +participants.map(function(p){return '<option value="'+p.chestNo+'">'+p.name+' (#'+p.chestNo+')</option>';}).join('');
+}
+function gfUpdateName(){
+  if(window._grpNameManual) return;
+  var el=document.getElementById('grp-captain');
+  var nameEl=document.getElementById('grp-name');
+  if(!el||!nameEl) return;
+  var opt=el.options[el.selectedIndex];
+  if(opt&&opt.value){
+    var capName=opt.text.replace(/ \(#\d+\)$/,'');
+    nameEl.value=capName+' & Party';
+  }
+}
+
+function showAddGroup(){
+  var items=DB.items().filter(function(i){return i.type==='group';});
+  if(!items.length) return toast('No group items yet. Add group items first!','error');
+  if(!DB.teams().length) return toast('No teams yet. Add teams first!','error');
+  showModal('<div class="modal-handle"></div><div class="modal-title">&#128101; Register Group</div>'+groupFormHTML()+'<button class="btn btn-primary mt-10" onclick="saveGroup(-1)">Register Group</button>');
+}
+function showEditGroup(idx){
+  var grp=DB.groups()[idx];
+  showModal('<div class="modal-handle"></div><div class="modal-title">Edit Group</div>'+groupFormHTML(grp)+'<button class="btn btn-primary mt-10" onclick="saveGroup('+idx+')">Save Changes</button><button class="btn btn-danger mt-6" onclick="deleteGroup('+idx+')">Delete Group</button>');
+}
+function saveGroup(idx){
+  var chest=v('grp-chest').trim();
+  if(!chest) return toast('Enter group chest number','error');
+  var itemId=parseInt(v('grp-itemId'));
+  if(!itemId) return toast('Select a group item','error');
+  var captainChest=v('grp-captain');
+  if(!captainChest) return toast('Select a captain','error');
+
+  // Get captain details from participants
+  var participants=DB.participants();
+  var captain=participants.find(function(p){return p.chestNo==captainChest;});
+  if(!captain) return toast('Captain not found','error');
+
+  // Second member (optional)
+  var members=[{chestNo:parseInt(captainChest),name:captain.name}];
+  var m2name=v('grp-mn-1').trim(), m2chest=v('grp-mc-1').trim();
+  if(m2name) members.push({chestNo:m2chest?parseInt(m2chest):null,name:m2name});
+
+  // Auto name = Captain + Party (unless manually set)
+  var customName=v('grp-name').trim();
+  var autoName=captain.name+' & Party';
+  var finalName=customName||autoName;
+
+  var item=DB.items().find(function(i){return i.id===itemId;});
+  var groups=DB.groups();
+  var rec={
+    id:idx>=0?groups[idx].id:Date.now(),
+    groupChestNo:parseInt(chest),
+    name:finalName,
+    section:v('grp-section'), team:v('grp-team'),
+    itemId:itemId, itemName:item?item.name:'',
+    captainChestNo:parseInt(captainChest),
+    members:members
+  };
+  if(idx>=0) groups[idx]=rec; else groups.push(rec);
+  DB.saveGroups(groups);
+  window._grpNameManual=false;
+  closeModal(); toast(idx>=0?'Group updated!':'Group registered!'); render('participants',{tab:'groups'});
+}
+
+function deleteGroup(idx){
+  if(!confirm('Delete this group?')) return;
+  var groups=DB.groups(); groups.splice(idx,1); DB.saveGroups(groups);
+  closeModal(); toast('Deleted'); render('participants',{tab:'groups'});
+}
+
+function renderParticipants(data){
+  data=data||{};
+  var participants=DB.participants(), sections=DB.sections(), items=DB.items(), groups=DB.groups();
+  var activeSection=data.section||'All';
+  var activeTab=data.tab||'individuals';
+  window._rpSec=activeSection; window._rpTab=activeTab; window._rpSecs=sections;
+
+  var filtered=activeSection==='All'?participants:participants.filter(function(p){return p.section===activeSection;});
+  var filteredGrp=activeSection==='All'?groups:groups.filter(function(g){return g.section===activeSection;});
+
+  var secTabs='<div class="tabs"><div class="tab '+(activeSection==='All'?'active':'')+'" onclick="rpSec(-1)">All ('+participants.length+')</div>'
+    +sections.map(function(s,si){
+      return '<div class="tab '+(activeSection===s?'active':'')+'" onclick="rpSec('+si+')">'+s+' ('+participants.filter(function(p){return p.section===s;}).length+')</div>';
+    }).join('')+'</div>';
+
+  var typeTabs='<div class="tabs" style="margin-top:8px">'
+    +'<div class="tab '+(activeTab==='individuals'?'active':'')+'" onclick="rpTab(0)">&#128100; Individuals ('+filtered.length+')</div>'
+    +'<div class="tab '+(activeTab==='groups'?'active':'')+'" onclick="rpTab(1)">&#128101; Groups ('+filteredGrp.length+')</div>'
+    +'</div>';
+
+  var addBtn=activeTab==='individuals'
+    ?'<button class="btn btn-primary btn-sm" onclick="showAddParticipant()">+ Add Individual</button>'
+    :'<button class="btn btn-primary btn-sm" onclick="showAddGroup()">+ Register Group</button>';
+  var hdr='<div style="display:flex;justify-content:flex-end;align-items:center;margin:10px 0">'+addBtn+'</div>';
+
+  var content='';
+  if(activeTab==='individuals'){
+    if(!filtered.length){
+      content='<div style="text-align:center;padding:40px;color:var(--text3)">&#128100; No individual participants yet.</div>';
+    } else {
+      content=filtered.map(function(p){
+        var pidx=participants.indexOf(p);
+        var evtNames=(p.items||[]).map(function(id){var it=items.find(function(x){return x.id===id;});return it?it.name:'?';}).join(', ');
+        return '<div class="list-item">'
+          +'<div class="list-avatar" style="background:var(--accent)22;color:var(--accent);font-weight:800">#'+p.chestNo+'</div>'
+          +'<div class="list-info"><div class="list-title">'+p.name+'</div>'
+          +'<div class="list-sub">'+p.team+' &middot; '+p.section+(evtNames?' &middot; '+evtNames:'')+'</div></div>'
+          +'<button class="btn btn-secondary btn-xs" onclick="showEditParticipant('+pidx+')">&#9998;</button></div>';
+      }).join('');
+    }
+  } else {
+    if(!filteredGrp.length){
+      content='<div style="text-align:center;padding:40px;color:var(--text3)">&#128101; No groups registered yet. Tap Register Group!</div>';
+    } else {
+      content=filteredGrp.map(function(g){
+        var gidx=groups.indexOf(g);
+        var memberNames=g.members.map(function(m){return m.name;}).filter(Boolean).join(', ');
+        return '<div class="list-item">'
+          +'<div class="list-avatar" style="background:#4a9eff22;color:#4a9eff;font-weight:800">#'+g.groupChestNo+'</div>'
+          +'<div class="list-info"><div class="list-title">'+g.name+'</div>'
+          +'<div class="list-sub">'+g.team+' &middot; '+g.itemName+'</div>'
+          +'<div class="list-sub" style="font-size:.7rem;margin-top:2px">&#128101; '+memberNames+'</div></div>'
+          +'<button class="btn btn-secondary btn-xs" onclick="showEditGroup('+gidx+')">&#9998;</button></div>';
+      }).join('');
+    }
+  }
+  return secTabs+typeTabs+hdr+content;
+}
+function rpSec(si){ render('participants',{section:si<0?'All':(window._rpSecs||[])[si]||'All',tab:window._rpTab||'individuals'}); }
+function rpTab(ti){ render('participants',{section:window._rpSec||'All',tab:ti===0?'individuals':'groups'}); }
+
+function participantFormHTML(p){
+  p=p||{};
+  var teams=DB.teams(), sections=DB.sections(), items=DB.items(), participants=DB.participants();
+  var nextChest=participants.length>0?Math.max.apply(null,participants.map(function(x){return parseInt(x.chestNo)||0;}))+1:101;
+  var selectedSection=p.section||sections[0]||'';
+  // Only individual items for this section
+  var sectionItems=items.filter(function(i){return i.section===selectedSection&&i.type!=='group';});
+  var selectedItems=p.items||[];
+
+  var sectOpts=sections.map(function(s){return '<option'+(p.section===s?' selected':'')+'>'+s+'</option>';}).join('');
+  var teamOpts=teams.map(function(t){return '<option value="'+t.name+'"'+(p.team===t.name?' selected':'')+'>'+t.name+'</option>';}).join('');
+
+  var itemList=sectionItems.length
+    ?sectionItems.map(function(item){
+        var badge=item.isStage
+          ?'<span style="font-size:.68rem;padding:1px 6px;border-radius:8px;background:rgba(240,165,0,.15);color:var(--accent)">Stage</span>'
+          :'<span style="font-size:.68rem;padding:1px 6px;border-radius:8px;background:rgba(0,200,150,.15);color:var(--green)">Off-Stage</span>';
+        return '<label style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer">'
+          +'<input type="checkbox" class="item-cb" value="'+item.id+'"'+(selectedItems.includes(item.id)?' checked':'')
+          +' style="width:16px;height:16px;accent-color:var(--accent)">'
+          +'<span style="flex:1;font-size:.83rem">'+item.name+'</span>'+badge+'</label>';
+      }).join('')
+    :'<div style="color:var(--text3);font-size:.8rem;padding:10px">No individual items for this section</div>';
+
+  return '<div class="form-group"><label class="form-label">Section</label>'
+    +'<select class="form-select" id="np-section" onchange="pfSectionChange()">'
+    +sectOpts+'</select></div>'
+    +'<div class="form-group"><label class="form-label">Team</label>'
+    +'<select class="form-select" id="np-team">'+teamOpts+'</select></div>'
+    +'<div class="form-group"><label class="form-label">Item</label>'
+    +'<div id="np-items" style="max-height:220px;overflow-y:auto;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:8px 12px">'
+    +itemList+'</div></div>'
+    +'<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-top:4px">'
+    +'<div style="font-size:.82rem;font-weight:700;margin-bottom:8px">Participant</div>'
+    +'<div class="form-row">'
+    +'<div class="form-group" style="flex:0 0 110px"><label class="form-label">Chest No.</label>'
+    +'<input class="form-input" id="np-chest" type="number" value="'+(p.chestNo||nextChest)+'"></div>'
+    +'<div class="form-group"><label class="form-label">Name</label>'
+    +'<input class="form-input" id="np-name" value="'+(p.name||'')+'" placeholder="Full name"></div>'
+    +'</div></div>';
+}
+function pfSectionChange(){
+  var sec=document.getElementById('np-section').value;
+  var items=DB.items().filter(function(i){return i.section===sec&&i.type!=='group';});
+  var itemList=items.length
+    ?items.map(function(item){
+        var badge=item.isStage
+          ?'<span style="font-size:.68rem;padding:1px 6px;border-radius:8px;background:rgba(240,165,0,.15);color:var(--accent)">Stage</span>'
+          :'<span style="font-size:.68rem;padding:1px 6px;border-radius:8px;background:rgba(0,200,150,.15);color:var(--green)">Off-Stage</span>';
+        return '<label style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer">'
+          +'<input type="checkbox" class="item-cb" value="'+item.id+'"'
+          +' style="width:16px;height:16px;accent-color:var(--accent)">'
+          +'<span style="flex:1;font-size:.83rem">'+item.name+'</span>'+badge+'</label>';
+      }).join('')
+    :'<div style="color:var(--text3);font-size:.8rem;padding:10px">No individual items for this section</div>';
+  document.getElementById('np-items').innerHTML=itemList;
+}
+
+function buildItemCheckboxes(sectionItems, selectedIds, groupNames){
+  if(!sectionItems.length) return '<div style="color:var(--text3);font-size:.8rem">No items for this section</div>';
+  return sectionItems.map(item=>{
+    const badge=item.type==='group'
+      ?'<span style="font-size:.68rem;padding:2px 7px;border-radius:10px;background:rgba(74,158,255,.15);color:var(--blue)">Group</span>'
+      :item.isStage
+        ?'<span style="font-size:.68rem;padding:2px 7px;border-radius:10px;background:rgba(240,165,0,.15);color:var(--accent)">On-Stage</span>'
+        :'<span style="font-size:.68rem;padding:2px 7px;border-radius:10px;background:rgba(0,200,150,.15);color:var(--green)">Off-Stage</span>';
+    return '<div style="padding:7px 0;border-bottom:1px solid rgba(58,31,110,.2)">'
+      +'<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.82rem">'
+      +'<input type="checkbox" class="item-cb" value="'+item.id+'"'+(selectedIds.includes(item.id)?' checked':'')
+      +' style="width:16px;height:16px;accent-color:var(--accent)">'
+      +'<span style="flex:1">'+item.name+'</span>'+badge
+      +'</label></div>';
+  }).join('');
+}
+
+function toggleGroupName(cb, itemId, isGroup){
+  if(!isGroup) return;
+  const el=document.getElementById('gname-'+itemId);
+  if(el) el.style.display=cb.checked?'block':'none';
+}
+function updateItemsForSection(selectedIds=[]){
+  const section=v('np-section');
+  const items=DB.items().filter(i=>i.section===section);
+  document.getElementById('np-items').innerHTML=buildItemCheckboxes(items, selectedIds, {});
+}
+function showAddParticipant(){ showModal(`<div class="modal-handle"></div><div class="modal-title">Add Participant</div>${participantFormHTML()}<button class="btn btn-primary mt-10" onclick="addParticipant()">Add Participant</button>`); }
+function showEditParticipant(idx){
+  const p=DB.participants()[idx];
+  showModal(`<div class="modal-handle"></div><div class="modal-title">Edit Participant</div>${participantFormHTML(p)}
+  <button class="btn btn-primary mt-10" onclick="updateParticipant(${idx})">Save Changes</button>
+  <button class="btn btn-secondary mt-10" onclick="closeModal()">Cancel</button>`);
+}
+function getCheckedItems(){
+  return [...document.querySelectorAll('#np-items input:checked')].map(c=>parseInt(c.value));
+}
+function validateEventLimits(selectedItems, participantIdx=-1){
+  const cfg=DB.config(), items=DB.items();
+  const stageItems=selectedItems.filter(id=>{const it=items.find(i=>i.id===id);return it&&it.type!=='group'&&it.isStage});
+  const offStageItems=selectedItems.filter(id=>{const it=items.find(i=>i.id===id);return it&&it.type!=='group'&&!it.isStage});
+  if(stageItems.length>(cfg.maxStageEvents||99)) return `Max ${cfg.maxStageEvents||3} on-stage items allowed!`;
+  if(offStageItems.length>(cfg.maxOffStageEvents||99)) return `Max ${cfg.maxOffStageEvents||5} off-stage items allowed!`;
+  return null;
+}
+function getGroupNames(){
+  const gnames={};
+  const items=DB.items();
+  items.filter(i=>i.type==='group').forEach(item=>{
+    const el=document.getElementById('gn-'+item.id);
+    if(el) gnames[item.id]=el.value.trim();
+  });
+  return gnames;
+}
+// Returns the display name for a participant in a group item
+// = custom group name if set, else first participant's name + " & Party"
+function getGroupDisplayName(itemId, participantName){
+  const items=DB.items(), participants=DB.participants();
+  const item=items.find(i=>i.id===itemId);
+  if(!item||item.type!=='group') return participantName;
+  // Find first registered participant for this group item
+  const first=participants.find(p=>(p.items||[]).includes(itemId));
+  if(first){
+    // Use custom name if set, else first person + & Party
+    const customName=first.groupNames&&first.groupNames[itemId];
+    return customName||first.name+' & Party';
+  }
+  // No one registered yet — use current participant name + & Party
+  return participantName+' & Party';
+}
+
+function addParticipant(){
+  const name=v('np-name').trim(), chest=v('np-chest').trim();
+  if(!name) return toast('Enter name','error');
+  if(!chest) return toast('Enter chest number','error');
+  const participants=DB.participants();
+  if(participants.find(p=>p.chestNo==chest)) return toast('Chest number already used!','error');
+  const checkedItems=getCheckedItems();
+  const err=validateEventLimits(checkedItems);
+  if(err) return toast(err,'error');
+  participants.push({id:Date.now(),chestNo:parseInt(chest),name,section:v('np-section'),team:v('np-team'),items:checkedItems});
+  DB.saveParticipants(participants); closeModal(); toast('Participant added!'); render('participants');
+}
+
+function updateParticipant(idx){
+  const name=v('np-name').trim(), chest=v('np-chest').trim();
+  if(!name) return toast('Enter name','error');
+  const participants=DB.participants();
+  const duplicate=participants.find((p,i)=>p.chestNo==chest&&i!==idx);
+  if(duplicate) return toast('Chest number used by '+duplicate.name,'error');
+  const checkedItems=getCheckedItems();
+  const err=validateEventLimits(checkedItems,idx);
+  if(err) return toast(err,'error');
+  participants[idx]={...participants[idx],chestNo:parseInt(chest),name,section:v('np-section'),team:v('np-team'),items:checkedItems};
+  DB.saveParticipants(participants); closeModal(); toast('Participant updated!'); render('participants');
+}
+
+function deleteParticipant(i){ const p=DB.participants(); p.splice(i,1); DB.saveParticipants(p); toast('Deleted'); render('participants'); }
+function filterParticipants(q,section){
+  const participants=DB.participants();
+  let filtered=section==='All'?participants:participants.filter(p=>p.section===section);
+  filtered=filtered.filter(p=>p.name.toLowerCase().includes(q.toLowerCase())||String(p.chestNo).includes(q));
+  document.getElementById('participantsList').innerHTML=filtered.map(p=>`
+    <div class="list-item">
+      <div class="list-avatar" style="background:var(--accent)22;color:var(--accent);font-weight:800;font-size:.8rem">#${p.chestNo}</div>
+      <div class="list-info"><div class="list-title">${p.name}</div><div class="list-sub">${p.team} · ${p.section}</div></div>
+      <div class="list-actions">
+        <button class="btn btn-secondary btn-sm btn-icon" onclick="showEditParticipant(${participants.indexOf(p)})">✏️</button>
+        <button class="btn btn-danger btn-sm btn-icon" onclick="deleteParticipant(${participants.indexOf(p)})">🗑</button>
+      </div>
+    </div>`).join('')||'<div style="color:var(--text3);text-align:center;padding:20px">No results</div>';
+}
+
+// =============================================
+// CODE LETTERS
+// =============================================
+function renderCodes(){
+  const items=DB.items(), participants=DB.participants(), marks=DB.marks(), sections=DB.sections();
+  const itemsWithP=items.filter(item=>item.type==='group'
+      ?DB.groups().some(g=>g.itemId===item.id)
+      :participants.some(p=>(p.items||[]).includes(item.id)));
+  return `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div style="font-size:.82rem;color:var(--text2)">Assign anonymous codes for green room</div>
+    <button class="btn btn-primary btn-sm" onclick="navigate('codeDetailed')">📋 Detailed View</button>
+  </div>
+  ${itemsWithP.length===0?'<div style="text-align:center;padding:30px;color:var(--text3)">🔤 Add participants to events first</div>':
+    itemsWithP.map(item=>{
+      const itemP=item.type==='group'
+      ? DB.groups().filter(g=>g.itemId===item.id).map(g=>({chestNo:g.groupChestNo,name:g.name,team:g.team}))
+      : participants.filter(p=>(p.items||[]).includes(item.id));
+      const itemMarks=marks.filter(m=>m.itemId===item.id);
+      return `
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">${item.name}</div><div style="font-size:.72rem;color:var(--text3)">${item.section} · ${itemP.length} participants</div></div>
+          <button class="btn btn-primary btn-sm" onclick="assignCodes(${item.id})">🔀 Assign Codes</button>
+        </div>
+        ${itemP.map(p=>{
+          const m=itemMarks.find(m=>m.chestNo===p.chestNo);
+          const dispName=item.type==='group'?getGroupDisplayName(item.id,p.name):p.name;
+          return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+            <div style="width:34px;height:34px;border-radius:8px;background:var(--accent)22;color:var(--accent);font-weight:800;display:flex;align-items:center;justify-content:center;font-size:1rem">${m?.codeLetter||'?'}</div>
+            <div style="flex:1"><div style="font-size:.85rem;font-weight:600">${dispName}</div><div style="font-size:.7rem;color:var(--text3)">#${p.chestNo} · ${p.team}</div></div>
+            <button class="btn btn-secondary btn-xs" onclick="editCode(${item.id},${p.chestNo})">✏️</button>
+          </div>`;
+        }).join('')}
+      </div>`}).join('')}`;
+}
+function renderCodeDetailed(){
+  const items=DB.items(), participants=DB.participants(), marks=DB.marks();
+  const itemsWithP=items.filter(item=>participants.some(p=>(p.items||[]).includes(item.id)));
+  if(itemsWithP.length===0) return '<div style="text-align:center;padding:30px;color:var(--text3)">No data yet</div>';
+  return `
+  <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+    <button class="btn btn-primary btn-sm" onclick="printCodeDetailed()">Print All</button>
+  </div>
+  ${itemsWithP.map(item=>{
+    const itemP=participants.filter(p=>(p.items||[]).includes(item.id));
+    const itemMarks=marks.filter(m=>m.itemId===item.id);
+    const sorted=itemP.map(p=>({p,m:itemMarks.find(m=>m.chestNo===p.chestNo)})).sort((a,b)=>(a.m?.codeLetter||'').localeCompare(b.m?.codeLetter||''));
+    return `
+    <div class="card">
+      <div style="margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)">
+        <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:3px">${item.section}</div>
+        <div style="font-weight:800;color:var(--gold);font-size:1rem">${item.name}</div>
+      </div>
+      <div style="overflow-x:auto">
+      <table class="code-table" style="min-width:420px">
+        <tr>
+          <th style="width:55px">Code</th>
+          <th style="width:85px">Chest No.</th>
+          <th>Name</th>
+          <th>Group</th>
+          <th style="width:110px;text-align:center">Signature</th>
+        </tr>
+        ${sorted.map(({p,m})=>`
+        <tr style="height:36px">
+          <td><b style="color:var(--accent);font-size:1.1rem">${m?.codeLetter||'?'}</b></td>
+          <td style="font-weight:600">#${p.chestNo}</td>
+          <td>${p.name}</td>
+          <td style="font-size:.78rem">${p.team}</td>
+          <td><div style="border-bottom:1px solid var(--border);height:20px;margin:6px 10px"></div></td>
+        </tr>`).join('')}
+      </table>
+      </div>
+    </div>`;
+  }).join('')}`;
+}
+function editCode(itemId, chestNo){
+  const marks=DB.marks();
+  const existing=marks.find(m=>m.itemId===itemId&&m.chestNo===chestNo);
+  showModal(`<div class="modal-handle"></div><div class="modal-title">Edit Code Letter</div>
+  <div class="form-group"><label class="form-label">Code Letter</label><input class="form-input" id="edit-code" value="${existing?.codeLetter||''}" placeholder="e.g. A" maxlength="3"></div>
+  <button class="btn btn-primary" onclick="saveCodeEdit(${itemId},${chestNo})">Save</button>`);
+}
+function saveCodeEdit(itemId,chestNo){
+  const code=v('edit-code').trim().toUpperCase();
+  if(!code) return toast('Enter code letter','error');
+  const marks=DB.marks();
+  const idx=marks.findIndex(m=>m.itemId===itemId&&m.chestNo===chestNo);
+  if(idx>=0) marks[idx].codeLetter=code;
+  else marks.push({id:Date.now(),itemId,chestNo,codeLetter:code,marks:[],total:0,grade:'',rank:0});
+  DB.saveMarks(marks); closeModal(); toast('Code updated!'); render('codes');
+}
+function assignCodes(itemId){
+  const item=DB.items().find(i=>i.id===itemId);
+  // Get the right list: groups for group items, participants for individual
+  const entries=item&&item.type==='group'
+    ? DB.groups().filter(g=>g.itemId===itemId).map(g=>g.groupChestNo)
+    : DB.participants().filter(p=>(p.items||[]).includes(itemId)).map(p=>p.chestNo);
+  const marks=DB.marks();
+  const letters='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const shuffled=[...entries].sort(()=>Math.random()-.5);
+  shuffled.forEach((chestNo,idx)=>{
+    const code=idx<26?letters[idx]:letters[Math.floor(idx/26)-1]+letters[idx%26];
+    const ei=marks.findIndex(m=>m.itemId===itemId&&m.chestNo===chestNo);
+    if(ei>=0) marks[ei].codeLetter=code;
+    else marks.push({id:Date.now()+idx,itemId,chestNo,codeLetter:code,total:0,grade:'',rank:0});
+  });
+  DB.saveMarks(marks); toast('Codes assigned! ('+shuffled.length+')'); render('codes');
+}
+
+// =============================================
+// MARKS
+// =============================================
+function renderMarks(data={}){
+  const items=DB.items(), participants=DB.participants(), marks=DB.marks(), sections=DB.sections();
+  const activeSection=data.section||'All';
+  const filteredItems=(activeSection==='All'?items:items.filter(i=>i.section===activeSection))
+    .filter(item=>item.type==='group'
+      ? DB.groups().some(g=>g.itemId===item.id)
+      : participants.some(p=>(p.items||[]).includes(item.id)));
+  return `
+  <div class="tabs">
+    <div class="tab ${activeSection==='All'?'active':''}" onclick="render('marks',{section:'All'})">All</div>
+    ${sections.map(s=>`<div class="tab ${activeSection===s?'active':''}" onclick="render('marks',{section:'${s}'})">${s}</div>`).join('')}
+  </div>
+  ${filteredItems.length===0?'<div style="text-align:center;padding:30px;color:var(--text3)">✍️ No items with participants</div>':
+    filteredItems.map(item=>{
+      const itemMarks=marks.filter(m=>m.itemId===item.id);
+      const entered=itemMarks.filter(m=>m.total>0).length;
+      const total=item.type==='group'
+        ? DB.groups().filter(g=>g.itemId===item.id).length
+        : participants.filter(p=>(p.items||[]).includes(item.id)).length;
+      return `
+      <div class="list-item" onclick="navigate('markEntry',{itemId:${item.id}})" style="cursor:pointer">
+        <div class="list-avatar" style="background:${entered===total&&total>0?'var(--green)':'var(--accent)'}22;color:${entered===total&&total>0?'var(--green)':'var(--accent)'};font-size:.7rem;font-weight:800">${item.code}</div>
+        <div class="list-info">
+          <div class="list-title">${item.name}</div>
+          <div class="list-sub">${item.section} · ${entered}/${total} entered ${item.declared?'· <span style="color:var(--green)">✓ Declared</span>':''} ${item.type==='group'?'<span class="badge" style="background:rgba(74,158,255,.15);color:var(--blue)">Group</span>':''}}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${entered===total&&total>0?'<span class="badge badge-green">Done</span>':entered>0?'<span class="badge badge-blue">Partial</span>':'<span class="badge badge-red">Pending</span>'}
+          <span style="color:var(--text3)">›</span>
+        </div>
+      </div>`}).join('')}`;
+}
+function renderMarkEntry(data){
+  data=data||{};
+  var itemId=data.itemId;
+  var items=DB.items(), participants=DB.participants(), marks=DB.marks(), cfg=DB.config();
+  var item=items.find(function(i){return i.id===itemId;});
+  if(!item) return '<div style="text-align:center;padding:30px;color:var(--text3)">Item not found</div>';
+  var isGrpItem=item.type==='group';
+  var itemP=isGrpItem
+    ? DB.groups().filter(function(g){return g.itemId===itemId;}).map(function(g){return {chestNo:g.groupChestNo,name:g.name,team:g.team};})
+    : participants.filter(function(p){return (p.items||[]).includes(itemId);});
+  var itemMarks=marks.filter(function(m){return m.itemId===itemId;});
+  var numJudges=parseInt(cfg.maxJudges)||3;
+  var maxPerJudge=parseInt(cfg.maxMarks)||100;
+
+  var headerHtml='<div class="card" style="margin-bottom:16px">'
+    +'<div style="font-size:1rem;font-weight:800;color:var(--gold)">'+item.name+'</div>'
+    +'<div style="font-size:.78rem;color:var(--text2);margin-top:4px">'+item.section
+    +' &middot; '+numJudges+' judge'+(numJudges>1?'s':'')+' &middot; Max '+(maxPerJudge*numJudges)
+    +(isGrpItem?' &middot; <span style="color:#4a9eff">Group Item</span>':'')+'</div>'
+    +(item.declared?'<div style="margin-top:8px;padding:6px 10px;background:rgba(0,200,100,.1);border-radius:8px;font-size:.78rem;color:var(--green)">&#10003; Results Declared</div>':'')
+    +'</div>';
+
+  if(!itemP.length){
+    return headerHtml+'<div style="text-align:center;padding:30px;color:var(--text3)">No participants. Assign code letters first.</div>'
+      +'<button class="btn '+(item.declared?'btn-warning':'btn-success')+'" onclick="toggleDeclare('+itemId+')">'
+      +(item.declared?'&#128274; Un-declare':'&#128226; Declare Results')+'</button>';
+  }
+
+  var cardsHtml=itemP.map(function(p){
+    var me=itemMarks.find(function(m){return m.chestNo===p.chestNo;})||{};
+    var code=me.codeLetter||'?';
+    var hasMarks=me.total>0;
+    var grade=me.grade||'';
+    var pct=me.pct||0;
+
+    var judgeRows='';
+    for(var ji=0;ji<numJudges;ji++){
+      var mkey='mark'+(ji+1);
+      var val=me[mkey]!==undefined&&me[mkey]!==''?me[mkey]:'';
+      judgeRows+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
+        +'<div style="width:70px;font-size:.78rem;color:var(--text2);font-weight:600">Judge '+(ji+1)+'</div>'
+        +'<input class="mark-input" id="m-'+p.chestNo+'-'+ji+'" type="number" min="0" max="'+maxPerJudge
+        +'" value="'+val+'" placeholder="0 – '+maxPerJudge
+        +'" onblur="autoSaveMark('+p.chestNo+','+itemId+','+numJudges+','+maxPerJudge+')"'
+        +' onkeydown="if(event.key===\'Enter\'){document.getElementById(\'m-'+p.chestNo+'-'+(ji+1)+'\')?document.getElementById(\'m-'+p.chestNo+'-'+(ji+1)+'\').focus():this.blur();}">'
+        +'<div style="font-size:.72rem;color:var(--text3)">/ '+maxPerJudge+'</div>'
+        +'</div>';
+    }
+    // Grace mark
+    judgeRows+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">'
+      +'<div style="width:70px;font-size:.78rem;color:var(--text2);font-weight:600">Grace</div>'
+      +'<input class="mark-input" id="m-'+p.chestNo+'-grace" type="number" min="0" max="10" value="'+(me.mark4||'')+'" placeholder="0"'
+      +' onblur="autoSaveMark('+p.chestNo+','+itemId+','+numJudges+','+maxPerJudge+')"'
+      +' onkeydown="if(event.key===\'Enter\'){this.blur();}">'
+      +'<div style="font-size:.72rem;color:var(--text3)">bonus</div>'
+      +'</div>';
+
+    var feedbackHtml=hasMarks
+      ?'<div id="saved-'+p.chestNo+'" style="margin-top:6px;padding:6px 10px;background:var(--bg3);border-radius:8px;display:flex;justify-content:space-between;align-items:center">'
+        +'<span style="font-size:.78rem;font-weight:700;color:var(--green)">'+grade+' &nbsp; '+Math.round(pct)+'%</span>'
+        +'<span style="font-size:.85rem;font-weight:800;color:var(--text)">'+me.total+'</span>'
+        +'</div>'
+      :'<div id="saved-'+p.chestNo+'" style="height:24px;margin-top:4px;font-size:.72rem;color:var(--text3)"></div>';
+
+    return '<div class="card" style="margin-bottom:12px">'
+      // Header row
+      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">'
+      +'<div style="width:40px;height:40px;border-radius:50%;background:var(--accent)22;color:var(--accent);'
+      +'font-weight:800;display:flex;align-items:center;justify-content:center;font-size:1.1rem">'+code+'</div>'
+      +'<div style="flex:1"><div style="font-size:.9rem;font-weight:700">'+p.name+'</div>'
+      +'<div style="font-size:.72rem;color:var(--text3)">#'+p.chestNo+' &middot; '+p.team+'</div></div>'
+      +(hasMarks?'<div style="font-size:1.1rem;font-weight:800;color:var(--green)">'+me.total+'</div>':'')
+      +'</div>'
+      +judgeRows
+      +feedbackHtml
+      +'</div>';
+  }).join('');
+
+  var declareBtn='<div class="divider"></div>'
+    +'<button class="btn '+(item.declared?'btn-warning':'btn-success')+'" style="width:100%" onclick="toggleDeclare('+itemId+')">'
+    +(item.declared?'&#128274; Un-declare Results':'&#128226; Declare Results')+'</button>';
+
+  return headerHtml+cardsHtml+declareBtn;
+}
+
+function calcGrade(pct){
+  if(pct>=90) return 'A+';
+  if(pct>=80) return 'A';
+  if(pct>=70) return 'B+';
+  if(pct>=60) return 'B';
+  if(pct>=50) return 'C';
+  return 'D';
+}
+function calcPoints(pct, cfg){
+  // Points based on grade/percentage bracket
+  if(pct>=90) return cfg.ptAp||3;   // A+ gets bonus points per grade bracket
+  if(pct>=80) return cfg.pt1||5;    // A (1st place equivalent)
+  if(pct>=70) return cfg.pt2||3;    // B+
+  if(pct>=60) return cfg.pt3||1;    // B
+  return 0;
+}
+function calcPercent(m1,m2,m3,m4,maximum){
+  if(maximum<=0) return 0;
+  return Math.min(100,((m1+m2+m3)/maximum)*100);
+}
+function calcIndvGradePoints(grade,cfg){
+  if(grade==='A+') return parseInt(cfg.indvAp)||10;
+  if(grade==='A')  return parseInt(cfg.indvA)||8;
+  if(grade==='B+') return parseInt(cfg.indvBp)||6;
+  if(grade==='B')  return parseInt(cfg.indvB)||4;
+  if(grade==='C')  return parseInt(cfg.indvC)||2;
+  return 0;
+}
+function calcGrpGradePoints(grade,cfg){
+  if(grade==='A+') return parseInt(cfg.grpAp)||15;
+  if(grade==='A')  return parseInt(cfg.grpA)||12;
+  if(grade==='B+') return parseInt(cfg.grpBp)||9;
+  if(grade==='B')  return parseInt(cfg.grpB)||6;
+  if(grade==='C')  return parseInt(cfg.grpC)||3;
+  return 0;
+}
+
+function saveMark(chestNo,itemId,numJudges,maxPerJudge){
+  var marks=DB.marks(), cfg=DB.config();
+  var m1=parseFloat(document.getElementById('m-j1')?document.getElementById('m-j1').value:0)||0;
+  var m2=numJudges>=2?(parseFloat(document.getElementById('m-j2')?document.getElementById('m-j2').value:0)||0):0;
+  var m3=numJudges>=3?(parseFloat(document.getElementById('m-j3')?document.getElementById('m-j3').value:0)||0):0;
+  var m4=parseFloat(document.getElementById('m-grace')?document.getElementById('m-grace').value:0)||0;
+  var maximum=numJudges*maxPerJudge;
+  var pct=calcPercent(m1,m2,m3,m4,maximum);
+  var grade=calcGrade(pct);
+  var item=DB.items().find(function(i){return i.id===itemId;});
+  var isGroup=item&&item.type==='group';
+  var pts=isGroup?calcGrpGradePoints(grade,cfg):calcIndvGradePoints(grade,cfg);
+  var total=m1+m2+m3+m4;
+  var existing=marks.findIndex(function(m){return m.chestNo===chestNo&&m.itemId===itemId;});
+  var rec={chestNo:chestNo,itemId:itemId,mark1:m1,mark2:m2,mark3:m3,mark4:m4,total:total,maximum:maximum,pct:Math.round(pct*10)/10,grade:grade,point:pts,rank:0};
+  if(existing>=0){rec.codeLetter=marks[existing].codeLetter||'';marks[existing]=Object.assign({},marks[existing],rec);}
+  else marks.push(rec);
+  DB.saveMarks(marks);
+  toast('Saved!');
+}
+function autoSaveMark(chestNo,itemId,numJudges,maxPerJudge){
+  var j1=document.getElementById('m-'+chestNo+'-0');
+  if(!j1||j1.value==='') return;
+  var marks=DB.marks(), cfg=DB.config();
+  var m1=parseFloat(j1.value)||0;
+  var m2El=document.getElementById('m-'+chestNo+'-1');
+  var m2=numJudges>=2&&m2El?(parseFloat(m2El.value)||0):0;
+  var m3El=document.getElementById('m-'+chestNo+'-2');
+  var m3=numJudges>=3&&m3El?(parseFloat(m3El.value)||0):0;
+  var graceEl=document.getElementById('m-'+chestNo+'-grace');
+  var m4=graceEl?(parseFloat(graceEl.value)||0):0;
+  var maximum=numJudges*maxPerJudge;
+  var pct=calcPercent(m1,m2,m3,m4,maximum);
+  var grade=calcGrade(pct);
+  var item=DB.items().find(function(i){return i.id===itemId;});
+  var isGroup=item&&item.type==='group';
+  var pts=isGroup?calcGrpGradePoints(grade,cfg):calcIndvGradePoints(grade,cfg);
+  var total=m1+m2+m3+m4;
+  var existing=marks.findIndex(function(m){return m.chestNo===chestNo&&m.itemId===itemId;});
+  var rec={chestNo:chestNo,itemId:itemId,mark1:m1,mark2:m2,mark3:m3,mark4:m4,total:total,maximum:maximum,pct:Math.round(pct*10)/10,grade:grade,point:pts,rank:0};
+  if(existing>=0){rec.codeLetter=marks[existing].codeLetter||'';marks[existing]=Object.assign({},marks[existing],rec);}
+  else marks.push(rec);
+  DB.saveMarks(marks);
+  var savedEl=document.getElementById('saved-'+chestNo);
+  if(savedEl){
+    savedEl.innerHTML='<span style="font-size:.78rem;font-weight:700;color:var(--green)">'+grade+' &nbsp;&nbsp; '+Math.round(pct)+'%</span><span style="font-size:.85rem;font-weight:800;color:var(--text)">Total: '+total+'</span>';
+    savedEl.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:var(--bg3);border-radius:8px;margin-top:6px';
+  }
+}
+function assignRanks(itemId){
+  var marks=DB.marks();
+  var itemMarks=marks.filter(function(m){return m.itemId===itemId&&m.total>0;});
+  itemMarks.sort(function(a,b){return b.total-a.total;});
+  // handle ties: same total = same rank
+  var rank=1;
+  itemMarks.forEach(function(m,i){
+    if(i>0&&m.total===itemMarks[i-1].total){
+      m.rank=itemMarks[i-1].rank;
+    } else {
+      m.rank=rank;
+    }
+    rank++;
+  });
+  // update in main marks array
+  itemMarks.forEach(function(ranked){
+    var mi=marks.findIndex(function(m){return m.chestNo===ranked.chestNo&&m.itemId===ranked.itemId;});
+    if(mi>=0) marks[mi].rank=ranked.rank;
+  });
+  DB.saveMarks(marks);
+}
+
+function toggleDeclare(itemId){
+  const items=DB.items();
+  const idx=items.findIndex(i=>i.id===itemId);
+  if(idx<0) return;
+  items[idx].declared=!items[idx].declared;
+  DB.saveItems(items);
+  if(items[idx].declared) assignRanks(itemId);
+  toast(items[idx].declared?'✅ Results Declared!':'Results Un-declared');
+  navigate('markEntry',{itemId},false);
+}
+
+// =============================================
+// POINTS CALCULATION (only declared items count)
+// =============================================
+function calcTeamPoints(){
+  var items=DB.items(), participants=DB.participants(), marks=DB.marks(), teams=DB.teams(), cfg=DB.config();
+  var tp={};
+  teams.forEach(function(t){ tp[t.name]={total:0,r1:0,r2:0,r3:0,aplus:0,grpPts:0,sections:{}}; });
+
+  items.filter(function(i){return i.declared;}).forEach(function(item){
+    var itemMarks=marks.filter(function(m){return m.itemId===item.id&&(m.total>0||m.mark1>0);});
+
+    if(item.type==='group'){
+      // GROUP: grade-based points per group (look up team via groups registry)
+      var groups=DB.groups();
+      itemMarks.forEach(function(m){
+        var grp=groups.find(function(g){return g.groupChestNo==m.chestNo&&g.itemId===item.id;});
+        var teamName=grp?grp.team:null;
+        if(!teamName||!tp[teamName]) return;
+        var pts=calcGrpGradePoints(m.grade,cfg);
+        if(m.grade==='A+') tp[teamName].aplus++;
+        tp[teamName].total+=pts;
+        tp[teamName].grpPts+=pts;
+        if(!tp[teamName].sections[item.section]) tp[teamName].sections[item.section]={total:0,r1:0,r2:0,r3:0};
+        tp[teamName].sections[item.section].total+=pts;
+      });
+    } else {
+      // INDIVIDUAL: rank-based points
+      itemMarks.sort(function(a,b){return b.total-a.total;});
+      itemMarks.forEach(function(m,idx){
+        var p=participants.find(function(pt){return pt.chestNo===m.chestNo;});
+        if(!p||!tp[p.team]) return;
+        var pts=0;
+        if(idx===0){pts=parseInt(cfg.pt1)||5;tp[p.team].r1++;}
+        else if(idx===1){pts=parseInt(cfg.pt2)||3;tp[p.team].r2++;}
+        else if(idx===2){pts=parseInt(cfg.pt3)||1;tp[p.team].r3++;}
+        if(m.grade==='A+') tp[p.team].aplus++;
+        tp[p.team].total+=pts;
+        if(!tp[p.team].sections[item.section]) tp[p.team].sections[item.section]={total:0,r1:0,r2:0,r3:0};
+        tp[p.team].sections[item.section].total+=pts;
+        if(idx===0) tp[p.team].sections[item.section].r1++;
+        else if(idx===1) tp[p.team].sections[item.section].r2++;
+        else if(idx===2) tp[p.team].sections[item.section].r3++;
+      });
+    }
+  });
+  return tp;
+}
+
+// =============================================
+// RESULTS
+// =============================================
+function renderResults(data){
+  data=data||{};
+  var items=DB.items(), participants=DB.participants(), marks=DB.marks(), sections=DB.sections();
+  var activeSection=data.section||'All';
+  window._resultsSection=activeSection; // preserve for re-render after declare
+  const filteredItems=(activeSection==='All'?items:items.filter(i=>i.section===activeSection))
+    .filter(item=>marks.some(m=>m.itemId===item.id&&m.total>0));
+  return `
+  <div class="tabs">
+    <div class="tab ${activeSection==='All'?'active':''}" onclick="render('results',{section:'All'})">All</div>
+    ${sections.map(s=>`<div class="tab ${activeSection===s?'active':''}" onclick="render('results',{section:'${s}'})">${s}</div>`).join('')}
+  </div>
+  ${filteredItems.length===0?'<div style="text-align:center;padding:30px;color:var(--text3)">🏆 Enter marks to see results</div>':
+    filteredItems.map(item=>{
+      const itemMarks=marks.filter(m=>m.itemId===item.id&&m.total>0).sort((a,b)=>b.total-a.total);
+      return `
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div><div style="font-weight:800;font-size:.95rem">${item.name}</div><div style="font-size:.72rem;color:var(--text3)">${item.section}</div></div>
+          <div style="display:flex;gap:8px;align-items:center">
+            ${item.declared?'<span class="badge badge-green">✓ Declared</span>':'<span class="badge badge-orange">Pending</span>'}
+            <button class="btn ${item.declared?'btn-warning':'btn-success'} btn-xs" onclick="toggleDeclareFromResults(${item.id})">${item.declared?'Undeclare':'Declare'}</button>
+          </div>
+        </div>
+        ${itemMarks.slice(0,5).map(m=>{
+          const p=participants.find(pt=>pt.chestNo===m.chestNo);
+          const grp=item.type==='group'?DB.groups().find(g=>g.groupChestNo===m.chestNo&&g.itemId===item.id):null;
+          const dispName=grp?grp.name:(p?.name||'#'+m.chestNo);
+          const dispTeam=grp?grp.team:(p?.team||'');
+          return `
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+            <div class="rank-badge rank-${m.rank<=3?m.rank:'other'}">${m.rank||'-'}</div>
+            <div style="flex:1"><div style="font-size:.85rem;font-weight:700">${dispName}</div><div style="font-size:.7rem;color:var(--text3)">${dispTeam} · #${m.chestNo}</div></div>
+            <div style="text-align:right"><div style="font-size:1rem;font-weight:800;color:${m.rank===1?'var(--gold)':m.rank===2?'#c0c0c0':m.rank===3?'#cd7f32':'var(--text)'}">${m.total}</div><div style="font-size:.68rem;color:var(--text3)">${m.grade}</div></div>
+          </div>`}).join('')}
+        ${itemMarks.length===0?'<div style="color:var(--text3);font-size:.8rem">No marks entered</div>':''}
+      </div>`}).join('')}`;
+}
+function toggleDeclareFromResults(itemId){
+  const items=DB.items(), idx=items.findIndex(i=>i.id===itemId);
+  if(idx<0) return;
+  items[idx].declared=!items[idx].declared;
+  DB.saveItems(items);
+  if(items[idx].declared) assignRanks(itemId);
+  toast(items[idx].declared?'✅ Declared! Points updated.':'Un-declared');
+  render('results',{section:window._resultsSection||'All'});
+}
+
+// =============================================
+// TEAM POINTS
+// =============================================
+function renderTeamPoints(){
+  const tp=calcTeamPoints();
+  const sorted=Object.entries(tp).sort((a,b)=>b[1].total-a[1].total);
+  const declared=DB.items().filter(i=>i.declared).length;
+  return `
+  <div class="card" style="background:rgba(240,165,0,.05);border-color:rgba(240,165,0,.2);margin-bottom:12px">
+    <div style="font-size:.78rem;color:var(--text2)">⚠️ Only <b style="color:var(--accent)">${declared} declared</b> events count towards points. Declare results from the Results page.</div>
+  </div>
+  <div class="card" style="overflow-x:auto">
+    <div class="card-header"><div class="card-title">🏆 Overall Team Standings</div><button class="btn btn-primary btn-sm" onclick="printTeamPoints()">🖨</button></div>
+    <table class="pts-table">
+      <tr><th>#</th><th>Team</th><th>🥇</th><th>🥈</th><th>🥉</th><th>A+</th><th>Points</th></tr>
+      ${sorted.map(([name,pts],idx)=>`
+      <tr>
+        <td><div class="rank-badge rank-${idx<3?idx+1:'other'}" style="width:24px;height:24px;font-size:.72rem">${idx+1}</div></td>
+        <td style="font-weight:700;font-size:.82rem;max-width:120px;overflow:hidden;text-overflow:ellipsis">${name}</td>
+        <td style="color:var(--gold)">${pts.r1}</td><td style="color:#c0c0c0">${pts.r2}</td><td style="color:#cd7f32">${pts.r3}</td>
+        <td style="color:var(--purple)">${pts.aplus}</td>
+        <td style="font-weight:800;color:var(--accent);font-size:1rem">${pts.total}</td>
+      </tr>`).join('')}
+    </table>
+  </div>
+  ${sorted.length>0&&sorted[0][1].total>0?`
+  <div class="card" style="background:linear-gradient(135deg,rgba(255,215,0,.1),rgba(240,165,0,.1));border-color:rgba(255,215,0,.3)">
+    <div style="text-align:center"><div style="font-size:2rem">🏆</div><div style="font-size:.72rem;color:var(--text2);margin-top:4px">OVERALL CHAMPION</div>
+    <div style="font-size:1.3rem;font-weight:800;color:var(--gold);margin-top:6px">${sorted[0][0]}</div>
+    <div style="font-size:1rem;color:var(--accent);font-weight:700">${sorted[0][1].total} Points</div></div>
+  </div>`:''}`;
+}
+
+// =============================================
+// SECTION-WISE POINTS
+// =============================================
+function renderSectionPoints(){
+  const tp=calcTeamPoints(), sections=DB.sections(), teams=DB.teams();
+  const declared=DB.items().filter(i=>i.declared).length;
+  return `
+  <div class="card" style="background:rgba(240,165,0,.05);border-color:rgba(240,165,0,.2);margin-bottom:12px">
+    <div style="font-size:.78rem;color:var(--text2)">Based on <b style="color:var(--accent)">${declared} declared</b> events</div>
+  </div>
+  ${sections.map(section=>{
+    const sectionData=Object.entries(tp).map(([name,pts])=>({name,pts:pts.sections[section]||{total:0,r1:0,r2:0,r3:0}})).filter(x=>x.pts.total>0||x.pts.r1>0||x.pts.r2>0).sort((a,b)=>b.pts.total-a.pts.total);
+    if(sectionData.length===0) return '';
+    return `
+    <div class="card" style="overflow-x:auto;margin-bottom:12px">
+      <div class="card-header"><div class="card-title">📂 ${section}</div><button class="btn btn-primary btn-sm" onclick="printSectionPoints('${section}')">🖨</button></div>
+      <table class="pts-table">
+        <tr><th>#</th><th>Team</th><th>🥇</th><th>🥈</th><th>🥉</th><th>Pts</th></tr>
+        ${sectionData.map((d,idx)=>`
+        <tr>
+          <td><div class="rank-badge rank-${idx<3?idx+1:'other'}" style="width:22px;height:22px;font-size:.68rem">${idx+1}</div></td>
+          <td style="font-size:.82rem;font-weight:600;max-width:120px;overflow:hidden;text-overflow:ellipsis">${d.name}</td>
+          <td style="color:var(--gold)">${d.pts.r1}</td><td style="color:#c0c0c0">${d.pts.r2}</td><td style="color:#cd7f32">${d.pts.r3}</td>
+          <td style="font-weight:800;color:var(--accent)">${d.pts.total}</td>
+        </tr>`).join('')}
+      </table>
+    </div>`;
+  }).join('')||'<div style="text-align:center;padding:30px;color:var(--text3)">No declared results yet</div>'}`;
+}
+
+// =============================================
+// INDIVIDUAL POINTS
+// =============================================
+function calcIndvPoints(p,declaredItems,marks,cfg){
+  var total=0,stage=0,offStage=0,r1=0,r2=0,r3=0,aplus=0;
+  declaredItems.forEach(function(item){
+    if(item.type==='group') return; // group items excluded from individual champion
+    var m=marks.find(function(mk){return mk.chestNo===p.chestNo&&mk.itemId===item.id&&mk.grade;});
+    if(!m) return;
+    var pts=calcIndvGradePoints(m.grade,cfg);
+    if(pts>0){
+      total+=pts;
+      if(item.isStage) stage+=pts; else offStage+=pts;
+    }
+    if(m.grade==='A+') aplus++;
+    if(m.rank===1) r1++; else if(m.rank===2) r2++; else if(m.rank===3) r3++;
+  });
+  return {total,stage,offStage,r1,r2,r3,aplus};
+}
+
+function renderIndividualPoints(data={}){
+  const participants=DB.participants(), marks=DB.marks(), items=DB.items(), cfg=DB.config();
+  const sections=DB.sections(), activeSection=data.section||'All';
+  const activeTab=data.tab||'overall';
+  const declaredItems=items.filter(i=>i.declared);
+  const filtered=activeSection==='All'?participants:participants.filter(p=>p.section===activeSection);
+  const indvPoints=filtered.map(p=>({p,...calcIndvPoints(p,declaredItems,marks,cfg)})).filter(x=>x.total>0||x.r1>0);
+  const sorted={
+    overall:[...indvPoints].sort((a,b)=>b.total-a.total),
+    stage:[...indvPoints].filter(x=>x.stage>0).sort((a,b)=>b.stage-a.stage),
+    offstage:[...indvPoints].filter(x=>x.offStage>0).sort((a,b)=>b.offStage-a.offStage),
+  };
+  const current=sorted[activeTab]||sorted.overall;
+  const ptKey=activeTab==='stage'?'stage':activeTab==='offstage'?'offStage':'total';
+  return `
+  <div class="tabs">
+    <div class="tab ${activeSection==='All'?'active':''}" onclick="render('individualPoints',{section:'All',tab:'${activeTab}'})">All</div>
+    ${sections.map(s=>`<div class="tab ${activeSection===s?'active':''}" onclick="render('individualPoints',{section:'${s}',tab:'${activeTab}'})">${s}</div>`).join('')}
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+    <button class="btn ${activeTab==='overall'?'btn-primary':'btn-secondary'} btn-sm" onclick="render('individualPoints',{section:'${activeSection}',tab:'overall'})">🏆 Overall</button>
+    <button class="btn ${activeTab==='stage'?'btn-primary':'btn-secondary'} btn-sm" onclick="render('individualPoints',{section:'${activeSection}',tab:'stage'})">🎤 Stage Champion</button>
+    <button class="btn ${activeTab==='offstage'?'btn-primary':'btn-secondary'} btn-sm" onclick="render('individualPoints',{section:'${activeSection}',tab:'offstage'})">✏️ Off-Stage Champion</button>
+    <button class="btn btn-secondary btn-sm" style="margin-left:auto" onclick="printIndvPoints('${activeSection}','${activeTab}')">🖨 Print</button>
+  </div>
+  ${current.length>0&&current[0][ptKey]>0?`
+  <div class="card" style="background:linear-gradient(135deg,rgba(255,215,0,.1),rgba(240,165,0,.1));border-color:rgba(255,215,0,.3);margin-bottom:12px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="font-size:2rem">🏆</div>
+      <div><div style="font-size:.68rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px">${activeTab==='stage'?'On-Stage Champion':activeTab==='offstage'?'Off-Stage Champion':'Overall Individual Champion'}</div>
+      <div style="font-size:1.1rem;font-weight:800;color:var(--gold)">${current[0].p.name}</div>
+      <div style="font-size:.75rem;color:var(--text2)">${current[0].p.team} · ${current[0].p.section} · ${current[0][ptKey]} pts</div></div>
+    </div>
+  </div>`:''}
+  ${current.length===0?'<div style="text-align:center;padding:30px;color:var(--text3)">No points yet — declare results first</div>':
+    `<div class="card" style="overflow-x:auto">
+    <table class="pts-table">
+      <tr><th>#</th><th>Name</th><th>Group</th><th>🥇</th><th>🥈</th><th>🥉</th><th>Pts</th></tr>
+      ${current.map((x,idx)=>`
+      <tr>
+        <td><div class="rank-badge rank-${idx<3?idx+1:'other'}" style="width:22px;height:22px;font-size:.68rem">${idx+1}</div></td>
+        <td style="font-size:.82rem;font-weight:700">${x.p.name}<div style="font-size:.68rem;color:var(--text3)">#${x.p.chestNo} · ${x.p.section}</div></td>
+        <td style="font-size:.75rem">${x.p.team}</td>
+        <td style="color:var(--gold)">${x.r1}</td><td style="color:#c0c0c0">${x.r2}</td><td style="color:#cd7f32">${x.r3}</td>
+        <td style="font-weight:800;color:var(--accent)">${x[ptKey]}</td>
+      </tr>`).join('')}
+    </table></div>`}`;
+}
+
+// =============================================
+// INDIVIDUAL DETAILED POINTS
+// =============================================
+function renderIndividualDetailed(data={}){
+  const participants=DB.participants(), marks=DB.marks(), items=DB.items(), cfg=DB.config();
+  const sections=DB.sections(), activeSection=data.section||sections[0]||'All';
+  const declaredItems=items.filter(i=>i.declared);
+  const filtered=(activeSection==='All'?participants:participants.filter(p=>p.section===activeSection));
+  return `
+  <div class="tabs">
+    <div class="tab ${activeSection==='All'?'active':''}" onclick="render('individualDetailed',{section:'All'})">All</div>
+    ${sections.map(s=>`<div class="tab ${activeSection===s?'active':''}" onclick="render('individualDetailed',{section:'${s}'})">${s}</div>`).join('')}
+  </div>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+    <button class="btn btn-primary btn-sm" onclick="printIndvDetailed('${activeSection}')">🖨 Print</button>
+  </div>
+  ${filtered.map(p=>{
+    const pItems=declaredItems.filter(item=>(p.items||[]).includes(item.id));
+    if(pItems.length===0) return '';
+    let totalPoints=0;
+    const rows=pItems.map(item=>{
+      const m=marks.find(m=>m.itemId===item.id&&m.chestNo===p.chestNo);
+      let pts=0;
+      if(m&&m.total>0){
+        if(m.rank===1) pts=cfg.pt1||5;
+        else if(m.rank===2) pts=cfg.pt2||3;
+        else if(m.rank===3) pts=cfg.pt3||1;
+      }
+      totalPoints+=pts;
+      return {item,m,pts};
+    });
+    if(rows.every(r=>!r.m||r.m.total===0)) return '';
+    return `
+    <div class="card" style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--accent)22;color:var(--accent);font-weight:800;display:flex;align-items:center;justify-content:center;font-size:.8rem">#${p.chestNo}</div>
+        <div style="flex:1"><div style="font-weight:800">${p.name}</div><div style="font-size:.72rem;color:var(--text3)">${p.team} · ${p.section}</div></div>
+        <div style="font-size:1.3rem;font-weight:800;color:var(--accent)">${totalPoints} pts</div>
+      </div>
+      <table class="pts-table">
+        <tr><th>Event</th><th>Marks</th><th>Grade</th><th>Rank</th><th>Pts</th></tr>
+        ${rows.map(({item,m,pts})=>`
+        <tr>
+          <td style="font-size:.78rem">${item.name}</td>
+          <td>${m?.total||'-'}</td>
+          <td>${m?.grade||'-'}</td>
+          <td>${m?.rank>0?`<div class="rank-badge rank-${m.rank<=3?m.rank:'other'}" style="width:22px;height:22px;font-size:.68rem">${m.rank}</div>`:'-'}</td>
+          <td style="font-weight:700;color:${pts>0?'var(--accent)':'var(--text3)'}">${pts||'-'}</td>
+        </tr>`).join('')}
+        <tr><td colspan="4" style="font-weight:700;text-align:right">Total:</td><td style="font-weight:800;color:var(--accent)">${totalPoints}</td></tr>
+      </table>
+    </div>`;
+  }).join('')||'<div style="text-align:center;padding:30px;color:var(--text3)">No data for this section</div>'}`;
+}
+
+// =============================================
+// WINNER LIST
+// =============================================
+function renderWinnerList(data={}){
+  const items=DB.items(), participants=DB.participants(), marks=DB.marks(), sections=DB.sections();
+  const activeSection=data.section||'All';
+  const filteredItems=(activeSection==='All'?items:items.filter(i=>i.section===activeSection)).filter(i=>i.declared&&marks.some(m=>m.itemId===i.id&&m.total>0));
+  return `
+  <div class="tabs">
+    <div class="tab ${activeSection==='All'?'active':''}" onclick="render('winnerList',{section:'All'})">All</div>
+    ${sections.map(s=>`<div class="tab ${activeSection===s?'active':''}" onclick="render('winnerList',{section:'${s}'})">${s}</div>`).join('')}
+  </div>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+    <button class="btn btn-primary btn-sm" onclick="printWinnerList('${activeSection}')">🖨 Print</button>
+  </div>
+  ${filteredItems.length===0?'<div style="text-align:center;padding:30px;color:var(--text3)">🏅 No declared results yet</div>':
+    filteredItems.map(item=>{
+      const itemMarks=marks.filter(m=>m.itemId===item.id&&m.total>0).sort((a,b)=>b.total-a.total).slice(0,3);
+      return `
+      <div class="winner-card">
+        <div class="winner-item-title">🎭 ${item.name} <span style="font-size:.72rem;color:var(--text3)">(${item.section})</span></div>
+        ${itemMarks.map((m,idx)=>{
+          const p=participants.find(pt=>pt.chestNo===m.chestNo);
+          const rankColors=['var(--gold)','#c0c0c0','#cd7f32'];
+          return `
+          <div style="display:flex;align-items:center;gap:10px;padding:6px 0${idx<itemMarks.length-1?';border-bottom:1px solid rgba(255,215,0,.1)':''}">
+            <div class="rank-badge rank-${idx+1}" style="width:28px;height:28px;font-size:.78rem">${idx+1}</div>
+            <div style="flex:1">
+              <div style="font-size:.88rem;font-weight:700;color:${rankColors[idx]}">${p?.name||'Unknown'}</div>
+              <div style="font-size:.7rem;color:var(--text3)">${p?.team||''} · #${m.chestNo}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-weight:800;color:${rankColors[idx]}">${m.total}</div>
+              <div style="font-size:.68rem;color:var(--text3)">${m.grade}</div>
+            </div>
+          </div>`}).join('')}
+      </div>`}).join('')}`;
+}
+
+// =============================================
+// REPORTS
+// =============================================
+function renderReports(){
+  var ri=[
+    ['Participants List','All students with chest numbers'],
+    ['Code Letter List','Simple code list per event'],
+    ['Code List Detailed','Full details with codes'],
+    ['Schedule','Item timetable'],
+    ['Results Report','Winners and rankings'],
+    ['Winner List','All declared winners'],
+    ['Team Points','Overall standings'],
+    ['Section-wise Points','Points by section'],
+    ['Individual Points','Student summary'],
+    ['Individual Detailed','Item-wise breakdown'],
+    ['Certificates','Generate certificates'],
+  ];
+  var icons=['👥','🔤','📋','📅','🏆','🏅','📊','📋','👤','📝','🎓'];
+  var html='<div class="card-title mb-10">📄 Print Reports</div>';
+  for(var i=0;i<ri.length;i++){
+    html+='<div class="list-item" onclick="repAction('+i+')" style="cursor:pointer">'
+      +'<div class="list-avatar" style="background:var(--bg3);font-size:1.3rem">'+icons[i]+'</div>'
+      +'<div class="list-info"><div class="list-title">'+ri[i][0]+'</div>'
+      +'<div class="list-sub">'+ri[i][1]+'</div></div>'
+      +'<span style="color:var(--text3)">&#8250;</span></div>';
+  }
+  html+='<div class="divider"></div>'
+    +'<div class="card-title mb-10">Data Management</div>'
+    +'<div class="list-item" onclick="exportData()" style="cursor:pointer">'
+    +'<div class="list-avatar" style="background:rgba(0,200,150,.2);color:var(--green);font-size:1.3rem">&#11015;&#65039;</div>'
+    +'<div class="list-info"><div class="list-title">Export All Data</div><div class="list-sub">Save as JSON backup</div></div>'
+    +'<span style="color:var(--text3)">&#8250;</span></div>'
+    +'<div class="list-item" onclick="triggerImport()" style="cursor:pointer">'
+    +'<div class="list-avatar" style="background:rgba(74,158,255,.2);color:var(--blue);font-size:1.3rem">&#11014;&#65039;</div>'
+    +'<div class="list-info"><div class="list-title">Import Data</div><div class="list-sub">Restore from JSON backup</div></div>'
+    +'<span style="color:var(--text3)">&#8250;</span></div>'
+    +'<input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">'
+    +'<div class="divider"></div>'
+    +'<div class="list-item" onclick="repAction(11)" style="cursor:pointer">'
+    +'<div class="list-avatar" style="background:rgba(0,200,150,.2);color:var(--green);font-size:1.3rem">&#128236;</div>'
+    +'<div class="list-info"><div class="list-title">Contact Us</div><div class="list-sub">Feedback and support</div></div>'
+    +'<span style="color:var(--text3)">&#8250;</span></div>';
+  return html;
+}
+function repAction(i){
+  if(i===0) printReport('participants');
+  else if(i===1) printReport('codelist');
+  else if(i===2) navigate('codeDetailed');
+  else if(i===3) navigate('schedule');
+  else if(i===4) printReport('results');
+  else if(i===5) navigate('winnerList');
+  else if(i===6) navigate('teamPoints');
+  else if(i===7) navigate('sectionPoints');
+  else if(i===8) navigate('individualPoints');
+  else if(i===9) navigate('individualDetailed');
+  else if(i===10) navigate('certificates');
+  else if(i===11) navigate('contactUs');
+}
+function triggerImport(){
+  document.getElementById('importFile').click();
+}
+
+// =============================================
+// SCHEDULE
+// =============================================
+function renderSchedule(){
+  const items=DB.items();
+  const withTime=items.filter(i=>i.time).sort((a,b)=>a.time.localeCompare(b.time));
+  const withoutTime=items.filter(i=>!i.time);
+  return `
+  <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+    <button class="btn btn-primary btn-sm" onclick="printReport('schedule')">🖨 Print</button>
+  </div>
+  ${withTime.length===0&&withoutTime.length===0?'<div style="text-align:center;padding:30px;color:var(--text3)">📅 Add items with times</div>':''}
+  ${withTime.length>0?'<div class="card-title mb-10">⏰ Scheduled Events</div>':''}
+  ${withTime.map(item=>`<div class="schedule-item"><div style="font-size:.72rem;color:var(--accent);font-weight:700">⏰ ${item.time} · Stage ${item.stage}</div><div style="font-size:.9rem;font-weight:700;margin-top:2px">${item.name}</div><div style="font-size:.72rem;color:var(--text3)">${item.section}</div></div>`).join('')}
+  ${withoutTime.length>0?'<div class="card-title mt-16 mb-10">📋 Unscheduled Events</div>':''}
+  ${withoutTime.map(item=>`<div class="list-item"><div class="list-avatar" style="background:var(--bg3);font-size:.7rem;color:var(--text3)">${item.code}</div><div class="list-info"><div class="list-title">${item.name}</div><div class="list-sub">${item.section}</div></div></div>`).join('')}`;
+}
+
+// =============================================
+// CERTIFICATES
+// =============================================
+function renderCertificates(){
+  const items=DB.items().filter(i=>i.declared), participants=DB.participants(), marks=DB.marks();
+  const winners=[];
+  items.forEach(item=>{
+    marks.filter(m=>m.itemId===item.id&&m.total>0).sort((a,b)=>b.total-a.total).slice(0,3).forEach((m,rank)=>{
+      const p=participants.find(pt=>pt.chestNo===m.chestNo);
+      if(p) winners.push({participant:p,item,rank:rank+1,marks:m});
+    });
+  });
+  return `
+  <div class="card" style="background:rgba(255,215,0,.05);border-color:rgba(255,215,0,.2);margin-bottom:12px">
+    <div style="font-size:.82rem;color:var(--text2)">Certificates are generated for <b>declared</b> event winners. Declare results first.</div>
+  </div>
+  ${winners.length===0?'<div style="text-align:center;padding:30px;color:var(--text3)">🎓 Declare results to generate certificates</div>':
+    winners.map((w,i)=>`
+    <div class="list-item" onclick="showCertificate(${i})" style="cursor:pointer">
+      <div class="rank-badge rank-${w.rank<=3?w.rank:'other'}">${w.rank}</div>
+      <div class="list-info"><div class="list-title">${w.participant.name}</div><div class="list-sub">${w.item.name} · ${w.item.section} · ${w.participant.team}</div></div>
+      <span style="color:var(--text3)">🖨</span>
+    </div>`).join('')}`;
+}
+function showCertificate(idx){
+  const items=DB.items().filter(i=>i.declared), participants=DB.participants(), marks=DB.marks(), cfg=DB.config();
+  const winners=[];
+  items.forEach(item=>{ marks.filter(m=>m.itemId===item.id&&m.total>0).sort((a,b)=>b.total-a.total).slice(0,3).forEach((m,rank)=>{ const p=participants.find(pt=>pt.chestNo===m.chestNo); if(p) winners.push({participant:p,item,rank:rank+1,marks:m}); }); });
+  const w=winners[idx]; if(!w) return;
+  const ranks=['First','Second','Third'];
+  showModal(`<div class="modal-handle"></div><div class="modal-title">Certificate Preview</div>
+  <div class="cert-preview">
+    <div style="font-size:.75rem;letter-spacing:3px;color:#8b0000;margin-bottom:4px">CERTIFICATE OF ACHIEVEMENT</div>
+    <h1 style="font-size:1.3rem;color:#1a0d30;font-family:Amiri,serif">${cfg.festName} ${cfg.year}</h1>
+    <div style="font-size:.78rem;color:#555;margin-bottom:16px">${cfg.institution}</div>
+    <p style="color:#333">This is to certify that</p>
+    <div class="cert-name">${w.participant.name}</div>
+    <p style="color:#333">representing <b>${w.participant.team}</b></p>
+    <p style="color:#333;margin-top:8px">has won <b>${ranks[w.rank-1]||w.rank+'th'} Place</b> in</p>
+    <p style="font-size:1.1rem;font-weight:700;color:#1a0d30;margin:6px 0">${w.item.name}</p>
+    <p style="font-size:.78rem;color:#666">${w.item.section} · Marks: ${w.marks.total} · Grade: ${w.marks.grade}</p>
+    <div style="margin-top:16px;font-size:.7rem;color:#888;border-top:1px solid #ddd;padding-top:8px">${cfg.venue||''} · ${cfg.date||''}</div>
+  </div>
+  <button class="btn btn-primary mt-10" onclick="printCertificate(${idx})">🖨 Print Certificate</button>
+  <button class="btn btn-secondary mt-10" onclick="closeModal()">Close</button>`);
+}
+function printCertificate(idx){
+  const items=DB.items().filter(i=>i.declared), participants=DB.participants(), marks=DB.marks(), cfg=DB.config();
+  const winners=[];
+  items.forEach(item=>{ marks.filter(m=>m.itemId===item.id&&m.total>0).sort((a,b)=>b.total-a.total).slice(0,3).forEach((m,rank)=>{ const p=participants.find(pt=>pt.chestNo===m.chestNo); if(p) winners.push({participant:p,item,rank:rank+1,marks:m}); }); });
+  const w=winners[idx]; if(!w) return;
+  const ranks=['First','Second','Third'];
+  const win=window.open('','_blank');
+  win.document.write(`<html><head><style>body{font-family:'Times New Roman',serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#f5f0e8}.cert{background:linear-gradient(135deg,#fff9e6,#fff3cc);border:8px double gold;padding:50px;max-width:600px;text-align:center}.name{font-size:1.8rem;font-weight:bold;color:#1a0d30;border-bottom:2px solid gold;display:inline-block;padding:0 30px;margin:12px 0}.event{font-size:1.3rem;font-weight:bold;color:#1a0d30}@media print{body{background:white}}</style></head><body>
+  <div class="cert">
+    <div style="font-size:.9rem;letter-spacing:4px;color:#8b0000">CERTIFICATE OF ACHIEVEMENT</div>
+    <h1 style="color:#8b0000;font-size:1.6rem;margin:8px 0">${cfg.festName} ${cfg.year}</h1>
+    <p style="color:#555;font-size:.9rem">${cfg.institution}</p><hr style="border-color:gold;margin:16px 0">
+    <p style="color:#333">This is to certify that</p>
+    <div class="name">${w.participant.name}</div>
+    <p style="color:#333">representing <b>${w.participant.team}</b></p>
+    <p style="margin-top:10px;color:#333">has won <b>${ranks[w.rank-1]||w.rank+'th'} Place</b> in</p>
+    <div class="event">${w.item.name}</div>
+    <p style="font-size:.85rem;color:#555">${w.item.section} Category</p>
+    <p style="margin-top:8px;font-size:.82rem">Total Marks: <b>${w.marks.total}</b> | Grade: <b>${w.marks.grade}</b></p>
+    <div style="display:flex;justify-content:space-between;margin-top:40px">
+      <div>_________________<br><small>Jury Secretary</small></div>
+      <div>_________________<br><small>Organising Secretary</small></div>
+    </div>
+    <p style="margin-top:10px;font-size:.75rem;color:#888">${cfg.venue||''} · ${cfg.date||''}</p>
+  </div></body></html>`);
+  win.document.close(); win.print();
+}
+
+// =============================================
+// PRINT FUNCTIONS
+// =============================================
+function printHeader(cfg){
+  return `<div style="text-align:center;border-bottom:2px solid #000;padding-bottom:12px;margin-bottom:20px">
+    <h1 style="font-size:1.5rem;margin:0">${cfg.festName} ${cfg.year}</h1>
+    <p style="margin:4px 0;color:#555">${cfg.institution}</p>
+    <p style="margin:2px 0;font-size:.85rem;color:#777">${cfg.venue||''} ${cfg.date?'| '+cfg.date:''}</p>
+  </div>`;
+}
+function openPrint(html){ const win=window.open('','_blank'); win.document.write(`<html><head><style>body{font-family:Arial,sans-serif;margin:20px;color:#000}h2{margin-top:20px;background:#1a0d30;color:#fff;padding:8px 12px;font-size:1rem}table{width:100%;border-collapse:collapse;margin-top:8px;font-size:.85rem}th{background:#f0a500;color:#000;padding:8px;text-align:left;font-size:.8rem}td{padding:8px;border-bottom:1px solid #ddd}tr:nth-child(even) td{background:#f9f9f9}@media print{body{margin:10px}}</style></head><body>${html}</body></html>`); win.document.close(); win.print(); }
+function printReport(type){
+  const cfg=DB.config(), participants=DB.participants(), items=DB.items(), marks=DB.marks();
+  let html=printHeader(cfg);
+  if(type==='participants'){
+    html+=`<h2>📋 Participants List</h2><table><tr><th>#</th><th>Chest No</th><th>Name</th><th>Group</th><th>Section</th><th>Events</th></tr>
+    ${participants.sort((a,b)=>a.chestNo-b.chestNo).map((p,i)=>`<tr><td>${i+1}</td><td><b>${p.chestNo}</b></td><td>${p.name}</td><td>${p.team}</td><td>${p.section}</td><td style="font-size:.78rem">${(p.items||[]).map(id=>items.find(it=>it.id===id)?.name||'').filter(Boolean).join(', ')}</td></tr>`).join('')}</table>`;
+  } else if(type==='codelist'){
+    items.filter(item=>marks.some(m=>m.itemId===item.id&&m.codeLetter)).forEach(item=>{
+      const itemMarks=marks.filter(m=>m.itemId===item.id&&m.codeLetter).sort((a,b)=>a.codeLetter.localeCompare(b.codeLetter));
+      html+=`<h2>🔤 ${item.name} (${item.section})</h2><table><tr><th>Code</th><th>Name</th><th>Chest No</th><th>Group</th></tr>
+      ${itemMarks.map(m=>{const p=participants.find(pt=>pt.chestNo===m.chestNo);return `<tr><td><b>${m.codeLetter}</b></td><td>${p?.name||'?'}</td><td>${m.chestNo}</td><td>${p?.team||'?'}</td></tr>`;}).join('')}</table>`;
+    });
+  } else if(type==='results'){
+    DB.sections().forEach(section=>{
+      const sectionItems=items.filter(i=>i.section===section&&marks.some(m=>m.itemId===i.id&&m.total>0));
+      if(!sectionItems.length) return;
+      html+=`<h2>📚 ${section}</h2>`;
+      sectionItems.forEach(item=>{
+        const im=marks.filter(m=>m.itemId===item.id&&m.total>0).sort((a,b)=>b.total-a.total);
+        html+=`<p style="font-weight:700;margin-top:12px">${item.name} ${item.declared?'<span style="color:green">✓ Declared</span>':''}</p><table><tr><th>Rank</th><th>Name</th><th>Group</th><th>Marks</th><th>Grade</th></tr>
+        ${im.slice(0,3).map((m,idx)=>{const p=participants.find(pt=>pt.chestNo===m.chestNo);return `<tr><td>${idx+1}</td><td>${p?.name||'?'}</td><td>${p?.team||'?'}</td><td>${m.total}</td><td>${m.grade}</td></tr>`;}).join('')}</table>`;
+      });
+    });
+  } else if(type==='schedule'){
+    html+=`<h2>📅 Event Schedule</h2><table><tr><th>Time</th><th>Stage</th><th>Event</th><th>Section</th></tr>
+    ${items.filter(i=>i.time).sort((a,b)=>a.time.localeCompare(b.time)).map(item=>`<tr><td>${item.time}</td><td>${item.stage}</td><td>${item.name}</td><td>${item.section}</td></tr>`).join('')}</table>`;
+  }
+  openPrint(html);
+}
+function printTeamPoints(){
+  const cfg=DB.config(), tp=calcTeamPoints(), sorted=Object.entries(tp).sort((a,b)=>b[1].total-a[1].total);
+  let html=printHeader(cfg)+`<h2>📊 Team Points - Overall Standings</h2><table><tr><th>Rank</th><th>Team</th><th>1st</th><th>2nd</th><th>3rd</th><th>A+</th><th>Total</th></tr>
+  ${sorted.map(([name,pts],i)=>`<tr><td>${i+1}</td><td><b>${name}</b></td><td>${pts.r1}</td><td>${pts.r2}</td><td>${pts.r3}</td><td>${pts.aplus}</td><td><b>${pts.total}</b></td></tr>`).join('')}</table>`;
+  openPrint(html);
+}
+function printSectionPoints(section){
+  const cfg=DB.config(), tp=calcTeamPoints();
+  const data=Object.entries(tp).map(([name,pts])=>({name,pts:pts.sections[section]||{total:0,r1:0,r2:0,r3:0}})).sort((a,b)=>b.pts.total-a.pts.total);
+  let html=printHeader(cfg)+`<h2>📂 ${section} - Section Points</h2><table><tr><th>Rank</th><th>Team</th><th>1st</th><th>2nd</th><th>3rd</th><th>Total</th></tr>
+  ${data.map((d,i)=>`<tr><td>${i+1}</td><td><b>${d.name}</b></td><td>${d.pts.r1}</td><td>${d.pts.r2}</td><td>${d.pts.r3}</td><td><b>${d.pts.total}</b></td></tr>`).join('')}</table>`;
+  openPrint(html);
+}
+function printIndvPoints(section, tab='overall'){
+  const cfg=DB.config(), participants=DB.participants(), marks=DB.marks(), items=DB.items(), cfgD=DB.config();
+  const declaredItems=items.filter(i=>i.declared);
+  const filtered=section==='All'?participants:participants.filter(p=>p.section===section);
+  const data=filtered.map(p=>{
+    let total=0,r1=0,r2=0,r3=0;
+    declaredItems.forEach(item=>{ const m=marks.find(m=>m.itemId===item.id&&m.chestNo===p.chestNo&&m.total>0); if(!m) return; if(m.rank===1){total+=cfgD.pt1||5;r1++;}else if(m.rank===2){total+=cfgD.pt2||3;r2++;}else if(m.rank===3){total+=cfgD.pt3||1;r3++;} });
+    return {p,total,r1,r2,r3};
+  }).filter(x=>x.total>0).sort((a,b)=>b.total-a.total);
+  let html=printHeader(cfg)+`<h2>👤 Individual Points${section!=='All'?' - '+section:''}</h2><table><tr><th>Rank</th><th>Name</th><th>Group</th><th>Section</th><th>1st</th><th>2nd</th><th>3rd</th><th>Total</th></tr>
+  ${data.map((x,i)=>`<tr><td>${i+1}</td><td><b>${x.p.name}</b></td><td>${x.p.team}</td><td>${x.p.section}</td><td>${x.r1}</td><td>${x.r2}</td><td>${x.r3}</td><td><b>${x.total}</b></td></tr>`).join('')}</table>`;
+  openPrint(html);
+}
+function printIndvDetailed(section){
+  const cfg=DB.config(), participants=DB.participants(), marks=DB.marks(), items=DB.items();
+  const declaredItems=items.filter(i=>i.declared);
+  const filtered=section==='All'?participants:participants.filter(p=>p.section===section);
+  let html=printHeader(cfg)+`<h2>📝 Individual Detailed Points${section!=='All'?' - '+section:''}</h2>`;
+  filtered.forEach(p=>{
+    const pItems=declaredItems.filter(item=>(p.items||[]).includes(item.id));
+    if(!pItems.length) return;
+    let total=0;
+    const rows=pItems.map(item=>{
+      const m=marks.find(m=>m.itemId===item.id&&m.chestNo===p.chestNo);
+      let pts=0;
+      if(m&&m.total>0){if(m.rank===1) pts=cfg.pt1||5;else if(m.rank===2) pts=cfg.pt2||3;else if(m.rank===3) pts=cfg.pt3||1;}
+      total+=pts;
+      return {item,m,pts};
+    });
+    if(rows.every(r=>!r.m||r.m.total===0)) return;
+    html+=`<p style="font-weight:700;margin-top:12px;font-size:.95rem">${p.name} <span style="font-size:.8rem;color:#666">#${p.chestNo} · ${p.team} · ${p.section}</span></p>
+    <table><tr><th>Event</th><th>Marks</th><th>Grade</th><th>Rank</th><th>Points</th></tr>
+    ${rows.map(({item,m,pts})=>`<tr><td>${item.name}</td><td>${m?.total||'-'}</td><td>${m?.grade||'-'}</td><td>${m?.rank>0?m.rank:'-'}</td><td><b>${pts||'-'}</b></td></tr>`).join('')}
+    <tr><td colspan="4" style="text-align:right;font-weight:700">Total</td><td><b>${total}</b></td></tr></table>`;
+  });
+  openPrint(html);
+}
+function printWinnerList(section){
+  const cfg=DB.config(), items=DB.items().filter(i=>i.declared), participants=DB.participants(), marks=DB.marks();
+  const filteredItems=section==='All'?items:items.filter(i=>i.section===section);
+  let html=printHeader(cfg)+`<h2>🏅 Winner List${section!=='All'?' - '+section:''}</h2>`;
+  filteredItems.forEach(item=>{
+    const im=marks.filter(m=>m.itemId===item.id&&m.total>0).sort((a,b)=>b.total-a.total).slice(0,3);
+    if(!im.length) return;
+    html+=`<p style="font-weight:700;margin-top:14px;background:#f0f0f0;padding:6px 10px">${item.name} <span style="font-size:.8rem;color:#666">(${item.section})</span></p>
+    <table><tr><th>Rank</th><th>Name</th><th>Group</th><th>Marks</th><th>Grade</th></tr>
+    ${im.map((m,idx)=>{const p=participants.find(pt=>pt.chestNo===m.chestNo);return `<tr><td><b>${idx+1}</b></td><td>${p?.name||'?'}</td><td>${p?.team||'?'}</td><td>${m.total}</td><td>${m.grade}</td></tr>`;}).join('')}</table>`;
+  });
+  openPrint(html);
+}
+function printCodeDetailed(){
+  const cfg=DB.config(), items=DB.items(), participants=DB.participants(), marks=DB.marks();
+  const itemsWithP=items.filter(item=>participants.some(p=>(p.items||[]).includes(item.id)));
+  let html=printHeader(cfg);
+  itemsWithP.forEach(item=>{
+    const itemP=participants.filter(p=>(p.items||[]).includes(item.id));
+    const itemMarks=marks.filter(m=>m.itemId===item.id);
+    const sorted=itemP.map(p=>({p,m:itemMarks.find(m=>m.chestNo===p.chestNo)})).sort((a,b)=>(a.m?.codeLetter||'').localeCompare(b.m?.codeLetter||''));
+    html+=`
+    <div style="page-break-inside:avoid;margin-bottom:28px">
+      <div style="margin-bottom:6px">
+        <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#888;margin-bottom:2px">${item.section}</div>
+        <div style="font-size:1.1rem;font-weight:800;color:#1a0d30;border-bottom:2px solid #f0a500;padding-bottom:4px">${item.name}</div>
+      </div>
+      <table>
+        <tr>
+          <th style="width:55px">Code</th>
+          <th style="width:85px">Chest No.</th>
+          <th>Name</th>
+          <th>Group</th>
+          <th style="width:130px;text-align:center">Signature</th>
+        </tr>
+        ${sorted.map(({p,m})=>`
+        <tr style="height:34px">
+          <td style="font-size:1.1rem;font-weight:800">${m?.codeLetter||'?'}</td>
+          <td>#${p.chestNo}</td>
+          <td>${p.name}</td>
+          <td style="font-size:.82rem">${p.team}</td>
+          <td style="border-bottom:1px solid #ccc">&nbsp;</td>
+        </tr>`).join('')}
+      </table>
+    </div>`;
+  });
+  openPrint(html);
+}
+
+// =============================================
+// CONTACT US
+// =============================================
+function renderContactUs(){
+  return `
+  <div class="card" style="background:linear-gradient(135deg,rgba(0,200,150,.08),rgba(74,158,255,.08));border-color:rgba(0,200,150,.3);text-align:center;padding:24px">
+    <div style="font-size:3rem;margin-bottom:12px">👨‍💻</div>
+    <div style="font-size:1.1rem;font-weight:800;color:var(--gold)">Mubashir Rabbani</div>
+    <div style="font-size:.82rem;color:var(--text2);margin-top:4px">Developer & Designer</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title mb-10">📞 Get In Touch</div>
+    <a href="tel:+919747415247" style="text-decoration:none">
+      <div class="list-item" style="cursor:pointer">
+        <div class="list-avatar" style="background:rgba(0,200,150,.2);color:var(--green);font-size:1.3rem">📱</div>
+        <div class="list-info"><div class="list-title">+91 9747415247</div><div class="list-sub">Tap to call</div></div>
+      </div>
+    </a>
+    <a href="mailto:mubashirakomr1@gmail.com" style="text-decoration:none">
+      <div class="list-item" style="cursor:pointer;margin-top:8px">
+        <div class="list-avatar" style="background:rgba(255,71,87,.2);color:var(--red);font-size:1.3rem">✉️</div>
+        <div class="list-info"><div class="list-title">mubashirakomr1@gmail.com</div><div class="list-sub">Tap to email</div></div>
+      </div>
+    </a>
+    <a href="https://wa.me/919747415247" target="_blank" style="text-decoration:none">
+      <div class="list-item" style="cursor:pointer;margin-top:8px">
+        <div class="list-avatar" style="background:rgba(37,211,102,.2);color:#25d366;font-size:1.3rem">💬</div>
+        <div class="list-info"><div class="list-title">WhatsApp</div><div class="list-sub">Chat on WhatsApp</div></div>
+      </div>
+    </a>
+  </div>
+
+  <div class="card">
+    <div class="card-title mb-10">☕ Buy Me a Coffee</div>
+    <div style="font-size:.82rem;color:var(--text2);margin-bottom:14px">If this app helped your event run smoothly, consider buying me a coffee via Google Pay!</div>
+    <a href="upi://pay?pa=9747415247@okbizaxis&pn=Mubashir%20Rabbani&cu=INR" style="text-decoration:none">
+      <div style="background:linear-gradient(135deg,#4285f4,#34a853);border-radius:12px;padding:16px;text-align:center;cursor:pointer">
+        <div style="font-size:1.5rem;margin-bottom:6px">☕</div>
+        <div style="color:#fff;font-weight:800;font-size:.95rem">Pay via Google Pay / UPI</div>
+        <div style="color:rgba(255,255,255,.8);font-size:.75rem;margin-top:4px">9747415247 · Mubashir Rabbani</div>
+      </div>
+    </a>
+    <div style="text-align:center;margin-top:10px;font-size:.72rem;color:var(--text3)">UPI ID: 9747415247@okbizaxis</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title mb-10">💡 Suggest an Update</div>
+    <div style="font-size:.82rem;color:var(--text2);margin-bottom:12px">Have an idea or found a bug? We'd love to hear from you!</div>
+    <div class="form-group"><label class="form-label">Your Name</label><input class="form-input" id="fb-name" placeholder="Your name"></div>
+    <div class="form-group"><label class="form-label">Feedback / Suggestion</label><textarea class="form-textarea" id="fb-msg" placeholder="Describe your idea, bug report or suggestion..." style="min-height:100px"></textarea></div>
+    <a id="fb-link" href="#" onclick="sendFeedback(event)" style="text-decoration:none">
+      <button class="btn btn-primary" type="button">📤 Send via WhatsApp</button>
+    </a>
+  </div>`;
+}
+function sendFeedback(e){
+  e.preventDefault();
+  const name=document.getElementById('fb-name')?.value.trim()||'Anonymous';
+  const msg=document.getElementById('fb-msg')?.value.trim();
+  if(!msg) return toast('Please enter your feedback','error');
+  const text=encodeURIComponent(`*Sahithyotsav App Feedback*
+
+From: ${name}
+
+${msg}`);
+  window.open(`https://wa.me/919747415247?text=${text}`,'_blank');
+}
+
+// =============================================
+// DATA EXPORT / IMPORT
+// =============================================
+function exportData(){
+  const data={config:DB.config(),teams:DB.teams(),sections:DB.sections(),items:DB.items(),participants:DB.participants(),marks:DB.marks(),exportDate:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=`sahithyotsav_backup_${new Date().toISOString().split('T')[0]}.json`; a.click();
+  toast('Data exported!');
+}
+function importData(event){
+  const file=event.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{ try{
+    const data=JSON.parse(e.target.result);
+    if(data.config) DB.saveConfig(data.config);
+    if(data.teams) DB.saveTeams(data.teams);
+    if(data.sections) DB.saveSections(data.sections);
+    if(data.items) DB.saveItems(data.items);
+    if(data.participants) DB.saveParticipants(data.participants);
+    if(data.marks) DB.saveMarks(data.marks);
+    toast('Data imported!'); navigate('dashboard');
+  }catch(err){toast('Invalid file','error');}};
+  reader.readAsText(file);
+}
+
+// =============================================
+// UTILS
+// =============================================
+function v(id){ const el=document.getElementById(id); return el?el.value:''; }
+function showModal(html){ document.getElementById('modalContent').innerHTML=html; document.getElementById('modalOverlay').classList.remove('hidden'); }
+function closeModal(){ document.getElementById('modalOverlay').classList.add('hidden'); }
+let toastTimer;
+function toast(msg,type='success'){
+  const ex=document.querySelector('.toast'); if(ex) ex.remove(); clearTimeout(toastTimer);
+  const el=document.createElement('div'); el.className=`toast ${type==='error'?'error':''}`;
+  el.textContent=msg; document.body.appendChild(el);
+  toastTimer=setTimeout(()=>el.remove(),2500);
+}
+
+// =============================================
+// INIT
+// =============================================
+window.addEventListener('load',()=>{
+  initTheme();
+  setTimeout(()=>{
+    document.getElementById('splash').style.opacity='0';
+    setTimeout(()=>{
+      document.getElementById('splash').style.display='none';
+      document.getElementById('app').style.display='flex';
+      navigate('dashboard',{},false);
+    },600);
+  },1800);
+});
+if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{})); }
+</script>
+</body>
+</html>
